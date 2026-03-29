@@ -53,7 +53,6 @@
   .nav-links a { font-size:0.8rem; font-weight:500; color:var(--slate); text-decoration:none; transition:color .3s; }
   .nav-links a:hover { color:var(--ink); }
 
-  /* Language Toggle */
   .lang-toggle { display:flex; background:var(--stone); border-radius:100px; padding:2px; cursor:pointer; user-select:none; }
   .lang-btn { padding:0.3rem 0.7rem; border-radius:100px; font-size:0.72rem; font-weight:600; color:var(--slate); transition:all .25s ease; line-height:1.2; }
   .lang-btn.active { background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
@@ -185,6 +184,60 @@
   .outcome-val { font-family:var(--font-heading-en); font-size:2.2rem; font-weight:900; color:var(--allianz-deep); margin-bottom:.3rem; }
   .outcome-label { font-size:0.78rem; color:var(--mist-text); line-height:1.5; }
 
+  /* ══ MARKET CONTEXT ══ */
+  .market-band { background:linear-gradient(135deg, var(--allianz-deep) 0%, #1a4db8 50%, #2d5fc4 100%); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); position:relative; overflow:hidden; }
+  .market-band::before { content:''; position:absolute; top:-30%; right:-10%; width:60%; height:160%; background:radial-gradient(circle, rgba(79,120,207,0.25) 0%, transparent 70%); pointer-events:none; }
+  .market-band::after { content:''; position:absolute; bottom:-20%; left:-5%; width:40%; height:100%; background:radial-gradient(circle, rgba(217,232,248,0.08) 0%, transparent 60%); pointer-events:none; }
+  .market-band-inner { max-width:var(--max-w); margin:0 auto; position:relative; z-index:1; }
+  .market-band .label { color:rgba(217,232,248,0.7); }
+  .market-band .label::before { background:rgba(217,232,248,0.7); }
+  .market-band h2 { color:#fff; margin-bottom:.6rem; }
+  .market-band-inner > .market-desc { color:rgba(255,255,255,0.55); font-size:0.9rem; max-width:560px; margin-bottom:2.5rem; line-height:1.9; }
+  .market-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2.5rem; }
+  .mstat { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius); padding:2rem 1.5rem; transition:transform .3s, background .3s; }
+  .mstat:hover { transform:translateY(-4px); background:rgba(255,255,255,0.1); }
+  .mstat-val { font-family:var(--font-heading-en); font-size:clamp(2.2rem,4vw,3rem); font-weight:900; color:#fff; line-height:1; margin-bottom:.5rem; }
+  .mstat-val sup { font-size:0.55em; vertical-align:super; color:var(--allianz-soft); }
+  .mstat-label { font-size:0.82rem; color:rgba(255,255,255,0.65); line-height:1.6; }
+  .mstat-tag { display:inline-block; font-size:0.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; background:rgba(217,232,248,0.15); color:rgba(217,232,248,0.8); border-radius:100px; padding:.25rem .7rem; margin-bottom:.8rem; }
+  .market-timeline { margin-top:3rem; padding-top:2.5rem; border-top:1px solid rgba(255,255,255,0.1); }
+  .market-timeline-label { font-size:0.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(217,232,248,0.5); margin-bottom:1.5rem; }
+  .mtl-row { display:flex; gap:0; position:relative; overflow-x:auto; padding-bottom:.5rem; }
+  .mtl-row::before { content:''; position:absolute; top:10px; left:10px; right:10px; height:1px; background:rgba(255,255,255,0.12); }
+  .mtl-item { flex:1; min-width:130px; padding:0 .8rem; position:relative; }
+  .mtl-dot { width:8px; height:8px; border-radius:50%; background:var(--allianz-soft); margin:6px auto 1rem; position:relative; z-index:1; }
+  .mtl-item.highlight .mtl-dot { width:12px; height:12px; background:#fff; box-shadow:0 0 0 3px rgba(217,232,248,0.4); margin:4px auto 1rem; }
+  .mtl-year { font-family:var(--font-heading-en); font-size:0.8rem; font-weight:700; color:rgba(255,255,255,0.45); margin-bottom:.3rem; text-align:center; }
+  .mtl-item.highlight .mtl-year { color:#fff; }
+  .mtl-desc { font-size:0.7rem; color:rgba(255,255,255,0.4); line-height:1.5; text-align:center; }
+  .mtl-item.highlight .mtl-desc { color:rgba(217,232,248,0.8); }
+  .market-source { margin-top:2rem; font-size:0.68rem; color:rgba(255,255,255,0.25); }
+  .market-source a { color:rgba(255,255,255,0.35); text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.15); transition:color .2s; }
+  .market-source a:hover { color:rgba(255,255,255,0.6); }
+
+  /* ══ IMPACT ══ */
+  .impact-divider { background:var(--chalk); padding:clamp(50px,6vw,80px) clamp(1.5rem,5vw,4rem); border-top:1px solid var(--stone); }
+  .impact-divider-inner { max-width:var(--max-w); margin:0 auto; }
+  .impact-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:2rem; }
+  .impact-card { border-radius:var(--radius); padding:2rem; display:flex; gap:1.5rem; align-items:flex-start; }
+  .impact-card.design-card { background:var(--allianz-mist); border:1px solid var(--allianz-pale); }
+  .impact-card.business-card { background:linear-gradient(135deg,#f0f7ee,#e8f5e4); border:1px solid #c8e6c0; }
+  .impact-card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+  .design-card .impact-card-icon { background:rgba(25,59,152,0.1); }
+  .business-card .impact-card-icon { background:rgba(42,157,92,0.12); }
+  .impact-card-content h4 { font-size:0.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1rem; }
+  .design-card .impact-card-content h4 { color:var(--allianz-deep); }
+  .business-card .impact-card-content h4 { color:#1e7e4a; }
+  .impact-items { display:flex; flex-direction:column; gap:.6rem; }
+  .impact-item { display:flex; align-items:center; gap:.8rem; }
+  .impact-num { font-family:var(--font-heading-en); font-size:1.6rem; font-weight:900; line-height:1; min-width:56px; }
+  .design-card .impact-num { color:var(--allianz-deep); }
+  .business-card .impact-num { color:#2a9d5c; }
+  .impact-desc { font-size:0.8rem; color:var(--slate); line-height:1.5; }
+  .impact-note { margin-top:1.5rem; font-size:0.7rem; color:var(--mist-text); line-height:1.6; padding-top:1rem; border-top:1px solid var(--stone); }
+  .impact-note a { color:var(--allianz-mid); text-decoration:none; }
+  .impact-note a:hover { text-decoration:underline; }
+
   /* ══ QUOTE ══ */
   .quote-section { background:var(--warm-white); border-top:1px solid var(--stone); border-bottom:1px solid var(--stone); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); }
   .quote-inner { max-width:var(--content-w); margin:0 auto; position:relative; }
@@ -213,8 +266,6 @@
   .reveal-delay-3 { transition-delay:.3s; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-
-  /* Language transition */
   [data-i18n] { transition: opacity 0.25s ease; }
   .lang-switching [data-i18n] { opacity: 0; }
 
@@ -223,8 +274,11 @@
     .ba-row{grid-template-columns:1fr} .specs-row{grid-template-columns:1fr;gap:2rem}
     .img-grid{grid-template-columns:1fr} .hero-meta-row{gap:1.5rem}
     .timeline{flex-wrap:wrap} .timeline::before{display:none} .tl-step{min-width:45%}
+    .market-stats{grid-template-columns:1fr}
+    .impact-row{grid-template-columns:1fr}
+    .mtl-row{flex-wrap:wrap} .mtl-row::before{display:none} .mtl-item{min-width:45%}
   }
-  @media(max-width:480px){ .tl-step{min-width:100%} .nav-links{gap:.8rem} .nav-right{gap:.8rem} }
+  @media(max-width:480px){ .tl-step{min-width:100%} .nav-links{gap:.8rem} .nav-right{gap:.8rem} .mtl-item{min-width:100%} }
 </style>
 </head>
 <body>
@@ -233,176 +287,543 @@
   <div class="nav-logo">HUGO<span>Design</span></div>
   <div class="nav-right">
     <div class="nav-links">
-      <a href="https://www.hugoke.club" data-i18n data-zh="&#39318;&#38913;" data-en="Home">&#39318;&#38913;</a>
+      <a href="https://www.hugoke.club" data-i18n data-zh="首頁" data-en="Home">首頁</a>
       <a href="https://www.behance.net/hugo_design" target="_blank">Behance</a>
-      <a href="https://www.hugoke.club/#contact" data-i18n data-zh="&#32879;&#32097;&#25105;" data-en="Contact">&#32879;&#32097;&#25105;</a>
+      <a href="https://www.hugoke.club/#contact" data-i18n data-zh="聯絡我" data-en="Contact">聯絡我</a>
     </div>
     <div class="lang-toggle" id="langToggle">
-      <div class="lang-btn active" data-lang="zh">&#20013;</div>
+      <div class="lang-btn active" data-lang="zh">中</div>
       <div class="lang-btn" data-lang="en">EN</div>
     </div>
   </div>
 </nav>
 
+<!-- ══ HERO ══ -->
 <div class="hero">
   <div class="hero-bg"></div>
   <div class="hero-img"><img src="https://static.wixstatic.com/media/8b67a7_db34dc0433af4411a7640a96e639b856~mv2.jpg/v1/fill/w_1920,h_1080,al_c,q_85,enc_avif,quality_auto/img_app_title%402x_compression.jpg" alt="Allianz Discover"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-badge">Case Study</div>
-    <h1 data-i18n data-zh="&#23433;&#32879; <em>i</em> &#25506;&#32034;<br>Allianz Discover" data-en="Allianz <em>Discover</em><br>Insurance Needs Explorer">&#23433;&#32879; <em>i</em> &#25506;&#32034;<br>Allianz Discover</h1>
-    <p class="hero-desc" data-i18n data-zh="&#28858;&#20445;&#38570;&#26989;&#21209;&#21729;&#25171;&#36896;&#30340; iPad &#25976;&#20301;&#37559;&#21806;&#24037;&#20855;&#8212;&#8212;&#24478;&#27888;&#22283;&#29256;&#26412;&#21040;&#21488;&#28771;&#24066;&#22580;&#30340;&#36328;&#25991;&#21270;&#35373;&#35336;&#36969;&#37197;&#65292;&#19968;&#22580;&#38364;&#26044;&#12300;&#20811;&#21046;&#12301;&#33287;&#12300;&#22312;&#22320;&#21270;&#12301;&#30340;&#35373;&#35336;&#23526;&#25136;&#12290;" data-en="A digital sales tool for iPad designed for insurance agents &mdash; a cross-cultural design adaptation from Thailand to Taiwan, balancing restraint with localization.">&#28858;&#20445;&#38570;&#26989;&#21209;&#21729;&#25171;&#36896;&#30340; iPad &#25976;&#20301;&#37559;&#21806;&#24037;&#20855;&#8212;&#8212;&#24478;&#27888;&#22283;&#29256;&#26412;&#21040;&#21488;&#28771;&#24066;&#22580;&#30340;&#36328;&#25991;&#21270;&#35373;&#35336;&#36969;&#37197;&#65292;&#19968;&#22580;&#38364;&#26044;&#12300;&#20811;&#21046;&#12301;&#33287;&#12300;&#22312;&#22320;&#21270;&#12301;&#30340;&#35373;&#35336;&#23526;&#25136;&#12290;</p>
+    <h1 data-i18n data-zh="安聯 <em>i</em> 探索<br>Allianz Discover" data-en="Allianz <em>Discover</em><br>Insurance Needs Explorer">安聯 <em>i</em> 探索<br>Allianz Discover</h1>
+    <p class="hero-desc" data-i18n
+      data-zh="為保險業務員打造的 iPad 數位銷售工具——從泰國版本到台灣市場的跨文化設計適配，一場關於「克制」與「在地化」的設計實戰。"
+      data-en="A digital sales tool for iPad designed for insurance agents — a cross-cultural design adaptation from Thailand to Taiwan, balancing restraint with localization.">
+      為保險業務員打造的 iPad 數位銷售工具——從泰國版本到台灣市場的跨文化設計適配，一場關於「克制」與「在地化」的設計實戰。
+    </p>
     <dl class="hero-meta-row">
-      <div class="hero-meta-item"><dt data-i18n data-zh="&#23458;&#25142;" data-en="Client">&#23458;&#25142;</dt><dd data-i18n data-zh="&#23433;&#32879;&#20154;&#22781; Allianz" data-en="Allianz Life Insurance">&#23433;&#32879;&#20154;&#22781; Allianz</dd></div>
-      <div class="hero-meta-item"><dt data-i18n data-zh="&#35282;&#33394;" data-en="Role">&#35282;&#33394;</dt><dd>UI/UX Designer</dd></div>
-      <div class="hero-meta-item"><dt data-i18n data-zh="&#26178;&#38291;" data-en="Duration">&#26178;&#38291;</dt><dd data-i18n data-zh="&#32004; 3&#8211;6 &#20491;&#26376;" data-en="3 &ndash; 6 months">&#32004; 3&#8211;6 &#20491;&#26376;</dd></div>
-      <div class="hero-meta-item"><dt data-i18n data-zh="&#24179;&#21488;" data-en="Platform">&#24179;&#21488;</dt><dd>iPad App</dd></div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="客戶" data-en="Client">客戶</dt>
+        <dd data-i18n data-zh="安聯人壽 Allianz" data-en="Allianz Life Insurance">安聯人壽 Allianz</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="角色" data-en="Role">角色</dt>
+        <dd>UI/UX Designer</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="時間" data-en="Duration">時間</dt>
+        <dd data-i18n data-zh="約 3–6 個月" data-en="3 – 6 months">約 3–6 個月</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="平台" data-en="Platform">平台</dt>
+        <dd>iPad App</dd>
+      </div>
     </dl>
   </div>
 </div>
 
+<!-- ══ OVERVIEW ══ -->
 <div class="section reveal">
   <div class="label">Overview</div>
-  <h2 data-i18n data-zh="&#23560;&#26696;&#27010;&#36848;" data-en="Project Overview">&#23560;&#26696;&#27010;&#36848;</h2>
-  <div class="nda" data-i18n data-zh="&#10022; &#26412;&#38913;&#28858;&#27010;&#24565;&#35373;&#35336;&#21576;&#29694;&#65292;&#23436;&#25972;&#35373;&#35336;&#27511;&#31243;&#27489;&#36814;&#36914;&#19968;&#27493;&#20102;&#35299;" data-en="&#10022; Visuals shown are concept designs based on hands-on project experience. Full design process available upon request.">&#10022; &#26412;&#38913;&#28858;&#27010;&#24565;&#35373;&#35336;&#21576;&#29694;&#65292;&#23436;&#25972;&#35373;&#35336;&#27511;&#31243;&#27489;&#36814;&#36914;&#19968;&#27493;&#20102;&#35299;</div>
-  <p class="prose" data-i18n data-zh="&#23433;&#32879;&#20154;&#22781;&#24076;&#26395;&#28858;&#26071;&#19979;&#26989;&#21209;&#22296;&#38538;&#25171;&#36896;&#19968;&#27454; iPad &#25976;&#20301;&#21270;&#37559;&#21806;&#36628;&#21161;&#24037;&#20855;&#12290;&#26989;&#21209;&#21729;&#22312;&#38754;&#23565;&#23458;&#25142;&#26178;&#65292;&#33021;&#21363;&#26178;&#36914;&#34892;&#20445;&#38570;&#38656;&#27714;&#20998;&#26512;&#12289;&#26041;&#26696;&#25645;&#37197;&#33287;&#36027;&#29992;&#35430;&#31639;&#65292;&#21462;&#20195;&#20659;&#32113;&#30340;&#32025;&#26412; DM &#33287;&#25163;&#21205;&#35336;&#31639;&#12290;" data-en="Allianz Life Insurance needed a digital sales tool for their field agents on iPad. The tool enables agents to conduct real-time insurance needs analysis, plan comparisons, and premium calculations during client meetings &mdash; replacing traditional paper brochures and manual workflows.">&#23433;&#32879;&#20154;&#22781;&#24076;&#26395;&#28858;&#26071;&#19979;&#26989;&#21209;&#22296;&#38538;&#25171;&#36896;&#19968;&#27454; iPad &#25976;&#20301;&#21270;&#37559;&#21806;&#36628;&#21161;&#24037;&#20855;&#12290;&#26989;&#21209;&#21729;&#22312;&#38754;&#23565;&#23458;&#25142;&#26178;&#65292;&#33021;&#21363;&#26178;&#36914;&#34892;&#20445;&#38570;&#38656;&#27714;&#20998;&#26512;&#12289;&#26041;&#26696;&#25645;&#37197;&#33287;&#36027;&#29992;&#35430;&#31639;&#65292;&#21462;&#20195;&#20659;&#32113;&#30340;&#32025;&#26412; DM &#33287;&#25163;&#21205;&#35336;&#31639;&#12290;</p>
-  <p class="prose" data-i18n data-zh="&#35373;&#35336;&#20197;<strong>&#12300;&#20197;&#23458;&#25142;&#28858;&#20013;&#24515;&#12301;</strong>&#28858;&#20986;&#30332;&#40670;&#65292;&#36879;&#36942;&#39640;&#20114;&#21205;&#24615;&#30340;&#25976;&#20301;&#24037;&#20855;&#65292;&#36939;&#29992;&#19981;&#21516;&#24180;&#40801;&#12289;&#32887;&#26989;&#12289;&#24615;&#21029;&#31561;&#25925;&#20107;&#24773;&#22659;&#65292;&#24555;&#36895;&#24171;&#21161;&#23458;&#25142;&#25506;&#32034;&#33258;&#24049;&#30340;&#20445;&#38570;&#38656;&#27714;&#12290;" data-en="Designed with a <strong>client-centered approach</strong>, the tool uses interactive scenarios based on age, occupation, and gender to help customers quickly discover their insurance needs. The streamlined mobile process allows agents to complete a full protection plan in a single session.">&#35373;&#35336;&#20197;<strong>&#12300;&#20197;&#23458;&#25142;&#28858;&#20013;&#24515;&#12301;</strong>&#28858;&#20986;&#30332;&#40670;&#65292;&#36879;&#36942;&#39640;&#20114;&#21205;&#24615;&#30340;&#25976;&#20301;&#24037;&#20855;&#65292;&#36939;&#29992;&#19981;&#21516;&#24180;&#40801;&#12289;&#32887;&#26989;&#12289;&#24615;&#21029;&#31561;&#25925;&#20107;&#24773;&#22659;&#65292;&#24555;&#36895;&#24171;&#21161;&#23458;&#25142;&#25506;&#32034;&#33258;&#24049;&#30340;&#20445;&#38570;&#38656;&#27714;&#12290;</p>
-  <p class="prose" data-i18n data-zh="&#36889;&#27454;&#24037;&#20855;&#30340;&#21069;&#36523;&#30001;<strong>&#27888;&#22283;&#22296;&#38538;&#35373;&#35336;</strong>&#65292;&#38656;&#35201;&#37341;&#23565;&#21488;&#28771;&#24066;&#22580;&#36914;&#34892;&#20840;&#38754;&#30340;&#22312;&#22320;&#21270;&#36969;&#37197;&#8212;&#8212;&#19981;&#21482;&#26159;&#35486;&#35328;&#32763;&#35695;&#65292;&#26356;&#28041;&#21450;&#35222;&#35258;&#39080;&#26684;&#12289;&#25490;&#29256;&#37007;&#36655;&#12289;&#25805;&#20316;&#32722;&#24931;&#33287;&#20445;&#38570;&#29986;&#21697;&#32080;&#27083;&#30340;&#37325;&#26032;&#35373;&#35336;&#12290;" data-en="The original version was <strong>designed by a team in Thailand</strong> and required comprehensive localization for the Taiwanese market &mdash; far beyond simple translation. This involved rethinking visual style, layout logic, interaction patterns, and product structure.">&#36889;&#27454;&#24037;&#20855;&#30340;&#21069;&#36523;&#30001;<strong>&#27888;&#22283;&#22296;&#38538;&#35373;&#35336;</strong>&#65292;&#38656;&#35201;&#37341;&#23565;&#21488;&#28771;&#24066;&#22580;&#36914;&#34892;&#20840;&#38754;&#30340;&#22312;&#22320;&#21270;&#36969;&#37197;&#8212;&#8212;&#19981;&#21482;&#26159;&#35486;&#35328;&#32763;&#35695;&#65292;&#26356;&#28041;&#21450;&#35222;&#35258;&#39080;&#26684;&#12289;&#25490;&#29256;&#37007;&#36655;&#12289;&#25805;&#20316;&#32722;&#24931;&#33287;&#20445;&#38570;&#29986;&#21697;&#32080;&#27083;&#30340;&#37325;&#26032;&#35373;&#35336;&#12290;</p>
+  <h2 data-i18n data-zh="專案概述" data-en="Project Overview">專案概述</h2>
+  <div class="nda" data-i18n
+    data-zh="✦ 本頁為概念設計呈現，完整設計歷程歡迎進一步了解"
+    data-en="✦ Visuals shown are concept designs based on hands-on project experience. Full design process available upon request.">
+    ✦ 本頁為概念設計呈現，完整設計歷程歡迎進一步了解
+  </div>
+  <p class="prose" data-i18n
+    data-zh="安聯人壽希望為旗下業務團隊打造一款 iPad 數位化銷售輔助工具。業務員在面對客戶時，能即時進行保險需求分析、方案搭配與費用試算，取代傳統的紙本 DM 與手動計算。"
+    data-en="Allianz Life Insurance needed a digital sales tool for their field agents on iPad. The tool enables agents to conduct real-time insurance needs analysis, plan comparisons, and premium calculations during client meetings — replacing traditional paper brochures and manual workflows.">
+    安聯人壽希望為旗下業務團隊打造一款 iPad 數位化銷售輔助工具。業務員在面對客戶時，能即時進行保險需求分析、方案搭配與費用試算，取代傳統的紙本 DM 與手動計算。
+  </p>
+  <p class="prose" data-i18n
+    data-zh="設計以<strong>「以客戶為中心」</strong>為出發點，透過高互動性的數位工具，運用不同年齡、職業、性別等故事情境，快速幫助客戶探索自己的保險需求。"
+    data-en="Designed with a <strong>client-centered approach</strong>, the tool uses interactive scenarios based on age, occupation, and gender to help customers quickly discover their insurance needs.">
+    設計以<strong>「以客戶為中心」</strong>為出發點，透過高互動性的數位工具，運用不同年齡、職業、性別等故事情境，快速幫助客戶探索自己的保險需求。
+  </p>
+  <p class="prose" data-i18n
+    data-zh="這款工具的前身由<strong>泰國團隊設計</strong>，需要針對台灣市場進行全面的在地化適配——不只是語言翻譯，更涉及視覺風格、排版邏輯、操作習慣與保險產品結構的重新設計。"
+    data-en="The original version was <strong>designed by a team in Thailand</strong> and required comprehensive localization for the Taiwanese market — far beyond simple translation, involving visual style, layout logic, interaction patterns, and product structure.">
+    這款工具的前身由<strong>泰國團隊設計</strong>，需要針對台灣市場進行全面的在地化適配——不只是語言翻譯，更涉及視覺風格、排版邏輯、操作習慣與保險產品結構的重新設計。
+  </p>
 </div>
 
+<!-- ══ MARKET CONTEXT ══ -->
+<div class="market-band reveal">
+  <div class="market-band-inner">
+    <div class="label">Market Context</div>
+    <h2 data-i18n data-zh="為何這個專案很重要" data-en="Why This Project Mattered">為何這個專案很重要</h2>
+    <p class="market-desc" data-i18n
+      data-zh="2016 年，台灣保險業的數位化浪潮正在崛起。安聯人壽決定成為業界第一家將保險銷售流程全面數位化的保險公司，這款 iPad 工具正是該策略的核心。"
+      data-en="In 2016, Taiwan's insurance industry was at a digital inflection point. Allianz chose to become the first insurer in Taiwan to fully digitize its sales process end-to-end — and this iPad tool was the centerpiece of that strategy.">
+      2016 年，台灣保險業的數位化浪潮正在崛起。安聯人壽決定成為業界第一家將保險銷售流程全面數位化的保險公司，這款 iPad 工具正是該策略的核心。
+    </p>
+
+    <div class="market-stats">
+      <div class="mstat reveal reveal-delay-1">
+        <div class="mstat-tag" data-i18n data-zh="台灣業界首創" data-en="Industry First">台灣業界首創</div>
+        <div class="mstat-val">#1</div>
+        <div class="mstat-label" data-i18n
+          data-zh="台灣第一家將保險銷售流程從頭到尾全面數位化的壽險公司"
+          data-en="First life insurer in Taiwan to fully digitize the end-to-end sales process">
+          台灣第一家將保險銷售流程從頭到尾全面數位化的壽險公司
+        </div>
+      </div>
+      <div class="mstat reveal reveal-delay-2">
+        <div class="mstat-tag" data-i18n data-zh="業務員產能" data-en="Agent Productivity">業務員產能</div>
+        <div class="mstat-val">40<sup>%</sup></div>
+        <div class="mstat-label" data-i18n
+          data-zh="導入數位工具兩年後，整體業務員銷售產能平均成長幅度"
+          data-en="Average increase in agent sales productivity within 2 years of full rollout">
+          導入數位工具兩年後，整體業務員銷售產能平均成長幅度
+        </div>
+      </div>
+      <div class="mstat reveal reveal-delay-3">
+        <div class="mstat-tag" data-i18n data-zh="工具覆蓋規模" data-en="Scale of Deployment">工具覆蓋規模</div>
+        <div class="mstat-val">5,000<sup>+</sup></div>
+        <div class="mstat-label" data-i18n
+          data-zh="安聯全台壽險顧問人數，為此工具的直接使用族群規模"
+          data-en="Allianz Life agents across Taiwan — the direct user base this design was built to serve">
+          安聯全台壽險顧問人數，為此工具的直接使用族群規模
+        </div>
+      </div>
+    </div>
+
+    <div class="market-timeline">
+      <div class="market-timeline-label" data-i18n data-zh="安聯數位工具演進時間軸" data-en="Allianz Digital Tools Evolution">安聯數位工具演進時間軸</div>
+      <div class="mtl-row">
+        <div class="mtl-item highlight">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2016</div>
+          <div class="mtl-desc" data-i18n data-zh="安聯i探索上線<br>本專案核心" data-en="Allianz Discover<br>This project">安聯i探索上線<br>本專案核心</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2017</div>
+          <div class="mtl-desc" data-i18n data-zh="安聯e服務<br>保戶App上線" data-en="e-Service App<br>launched">安聯e服務<br>保戶App上線</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2018</div>
+          <div class="mtl-desc" data-i18n data-zh="取得FinTech<br>發明專利" data-en="FinTech patent<br>awarded">取得FinTech<br>發明專利</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2018</div>
+          <div class="mtl-desc" data-i18n data-zh="Allie智能客服<br>上線" data-en="Allie AI service<br>launched">Allie智能客服<br>上線</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2020</div>
+          <div class="mtl-desc" data-i18n data-zh="數位生態系<br>七大區塊完整" data-en="Full digital<br>ecosystem live">數位生態系<br>七大區塊完整</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2025</div>
+          <div class="mtl-desc" data-i18n data-zh="Agency Digital Hub<br>創業基地模式" data-en="Digital Hub<br>agency model">Agency Digital Hub<br>創業基地模式</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="market-source" data-i18n
+      data-zh="數據來源：<a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 — 安聯人壽數位轉型策略深度報導</a>；<a href='https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html' target='_blank'>安聯人壽30週年官方頁面</a>"
+      data-en="Sources: <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 — Allianz Digital Transformation Report</a>; <a href='https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html' target='_blank'>Allianz Taiwan 30th Anniversary</a>">
+      數據來源：<a href="https://www.ithome.com.tw/people/124830" target="_blank">iThome 2018 — 安聯人壽數位轉型策略深度報導</a>；<a href="https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html" target="_blank">安聯人壽30週年官方頁面</a>
+    </p>
+  </div>
+</div>
+
+<!-- ══ DESIGN CONCEPT ══ -->
 <div class="section reveal">
   <div class="label">Design Concept</div>
-  <h2 data-i18n data-zh="&#35373;&#35336;&#26680;&#24515;&#29702;&#24565;" data-en="Core Design Philosophy">&#35373;&#35336;&#26680;&#24515;&#29702;&#24565;</h2>
+  <h2 data-i18n data-zh="設計核心理念" data-en="Core Design Philosophy">設計核心理念</h2>
   <div class="concept-card" style="margin-top:1.5rem;">
     <div class="concept-img"><img src="https://static.wixstatic.com/media/8b67a7_45e57d688e2d49c8926bae20fd49ae1e~mv2.png/v1/fill/w_800,h_900,al_c,q_90,enc_avif,quality_auto/8b67a7_45e57d688e2d49c8926bae20fd49ae1e~mv2.png" alt="Concept"></div>
     <div class="concept-text">
-      <h3 data-i18n data-zh="&#33287;&#26178;&#20465;&#36914;&#12539;&#21363;&#26178;&#21576;&#29694;<br>&#20445;&#21934;&#25976;&#20301;&#21270;&#37559;&#21806;&#26368;&#20339;&#21033;&#22120;" data-en="Stay Current, Present Instantly<br>The Ultimate Digital Sales Tool">&#33287;&#26178;&#20465;&#36914;&#12539;&#21363;&#26178;&#21576;&#29694;<br>&#20445;&#21934;&#25976;&#20301;&#21270;&#37559;&#21806;&#26368;&#20339;&#21033;&#22120;</h3>
-      <p data-i18n data-zh="&#21033;&#29992;&#25976;&#20301;&#24037;&#20855;&#23559;&#26178;&#20107;&#31561;&#36039;&#35338;&#20570;&#21363;&#26178;&#26356;&#26032;&#33287;&#25972;&#29702;&#65292;&#35731;&#26989;&#21209;&#34249;&#30001;&#25972;&#29702;&#24460;&#30340;&#25976;&#20301;&#20839;&#23481;&#65292;&#21332;&#21161;&#23458;&#25142;&#26356;&#30637;&#35299;&#20445;&#38570;&#36039;&#35338;&#65292;&#25552;&#20379;&#26368;&#36969;&#21512;&#30340;&#20445;&#38570;&#35215;&#21123;&#26041;&#26696;&#12289;&#35215;&#36991;&#39080;&#38570;&#12290;" data-en="Leveraging real-time data updates and curated content, the tool helps agents deliver timely insurance information to clients, enabling them to understand risks and find the right coverage plan.">&#21033;&#29992;&#25976;&#20301;&#24037;&#20855;&#23559;&#26178;&#20107;&#31561;&#36039;&#35338;&#20570;&#21363;&#26178;&#26356;&#26032;&#33287;&#25972;&#29702;&#65292;&#35731;&#26989;&#21209;&#34249;&#30001;&#25972;&#29702;&#24460;&#30340;&#25976;&#20301;&#20839;&#23481;&#65292;&#21332;&#21161;&#23458;&#25142;&#26356;&#30637;&#35299;&#20445;&#38570;&#36039;&#35338;&#65292;&#25552;&#20379;&#26368;&#36969;&#21512;&#30340;&#20445;&#38570;&#35215;&#21123;&#26041;&#26696;&#12289;&#35215;&#36991;&#39080;&#38570;&#12290;</p>
+      <h3 data-i18n data-zh="與時俱進・即時呈現<br>保單數位化銷售最佳利器" data-en="Stay Current, Present Instantly<br>The Ultimate Digital Sales Tool">與時俱進・即時呈現<br>保單數位化銷售最佳利器</h3>
+      <p data-i18n
+        data-zh="利用數位工具將時事等資訊即時更新與整理，讓業務員透過整理後的數位內容，協助客戶更了解保險資訊，提供最適合的保險規劃方案、有效規避風險。"
+        data-en="Leveraging real-time data updates and curated content, the tool helps agents deliver timely insurance information to clients, enabling them to understand risks and find the right coverage plan.">
+        利用數位工具將時事等資訊即時更新與整理，讓業務員透過整理後的數位內容，協助客戶更了解保險資訊，提供最適合的保險規劃方案、有效規避風險。
+      </p>
     </div>
   </div>
   <div class="concept-card reverse">
     <div class="concept-img"><img src="https://static.wixstatic.com/media/8b67a7_b11dfd5cb7a94a44ae1047f79d66d454~mv2.png/v1/fill/w_800,h_560,al_c,q_90,enc_avif,quality_auto/8b67a7_b11dfd5cb7a94a44ae1047f79d66d454~mv2.png" alt="Illustrations"></div>
     <div class="concept-text">
-      <h3 data-i18n data-zh="&#36259;&#21619;&#33287;&#20659;&#36958;&#36039;&#35338;&#20860;&#23481;" data-en="Where Fun Meets Information">&#36259;&#21619;&#33287;&#20659;&#36958;&#36039;&#35338;&#20860;&#23481;</h3>
-      <p data-i18n data-zh="&#35373;&#35336;&#22296;&#38538;&#32362;&#35069;&#20102;&#22823;&#37327;&#25554;&#30059;&#65292;&#20197;&#39006;&#20284;&#36938;&#25138;&#30340;&#21451;&#21892;&#25805;&#20316;&#20171;&#38754;&#65292;&#35731;&#23458;&#25142;&#20197;&#36629;&#39686;&#12289;&#36259;&#21619;&#21313;&#36275;&#30340;&#24773;&#22659;&#20358;&#36914;&#34892;&#38656;&#27714;&#25506;&#32034;&#65292;&#36805;&#36895;&#30637;&#35299;&#33258;&#24049;&#20445;&#38570;&#19978;&#30340;&#38656;&#27714;&#12290;" data-en="The design team created a rich library of custom illustrations, building a game-like, friendly interface that lets clients explore their insurance needs through engaging, lighthearted scenarios.">&#35373;&#35336;&#22296;&#38538;&#32362;&#35069;&#20102;&#22823;&#37327;&#25554;&#30059;&#65292;&#20197;&#39006;&#20284;&#36938;&#25138;&#30340;&#21451;&#21892;&#25805;&#20316;&#20171;&#38754;&#65292;&#35731;&#23458;&#25142;&#20197;&#36629;&#39686;&#12289;&#36259;&#21619;&#21313;&#36275;&#30340;&#24773;&#22659;&#20358;&#36914;&#34892;&#38656;&#27714;&#25506;&#32034;&#65292;&#36805;&#36895;&#30637;&#35299;&#33258;&#24049;&#20445;&#38570;&#19978;&#30340;&#38656;&#27714;&#12290;</p>
+      <h3 data-i18n data-zh="趣味與傳遞資訊兼容" data-en="Where Fun Meets Information">趣味與傳遞資訊兼容</h3>
+      <p data-i18n
+        data-zh="設計團隊繪製了大量插畫，以類似遊戲的友善操作介面，讓客戶以輕鬆、趣味十足的情境進行需求探索，迅速了解自己在保險上的需求。"
+        data-en="The design team created a rich library of custom illustrations, building a game-like, friendly interface that lets clients explore their insurance needs through engaging, lighthearted scenarios.">
+        設計團隊繪製了大量插畫，以類似遊戲的友善操作介面，讓客戶以輕鬆、趣味十足的情境進行需求探索，迅速了解自己在保險上的需求。
+      </p>
     </div>
   </div>
 </div>
 
+<!-- ══ CHALLENGES ══ -->
 <div class="band-dark reveal">
   <div class="band-dark-inner">
     <div class="label">Challenges</div>
-    <h2 data-i18n data-zh="&#35373;&#35336;&#25361;&#25136;" data-en="Design Challenges">&#35373;&#35336;&#25361;&#25136;</h2>
-    <p data-i18n data-zh="&#36889;&#20491;&#23560;&#26696;&#30340;&#35079;&#38620;&#24230;&#19981;&#22312;&#26044;&#21934;&#19968;&#21151;&#33021;&#65292;&#32780;&#26159;&#22810;&#37325;&#38480;&#21046;&#26781;&#20214;&#19979;&#30340;&#24179;&#34913;&#21462;&#25448;&#12290;" data-en="The complexity wasn't about any single feature &mdash; it was about balancing multiple constraints simultaneously.">&#36889;&#20491;&#23560;&#26696;&#30340;&#35079;&#38620;&#24230;&#19981;&#22312;&#26044;&#21934;&#19968;&#21151;&#33021;&#65292;&#32780;&#26159;&#22810;&#37325;&#38480;&#21046;&#26781;&#20214;&#19979;&#30340;&#24179;&#34913;&#21462;&#25448;&#12290;</p>
+    <h2 data-i18n data-zh="設計挑戰" data-en="Design Challenges">設計挑戰</h2>
+    <p data-i18n
+      data-zh="這個專案的複雜度不在於單一功能，而是在多重限制條件下的平衡取捨。"
+      data-en="The complexity wasn't about any single feature — it was about balancing multiple constraints simultaneously.">
+      這個專案的複雜度不在於單一功能，而是在多重限制條件下的平衡取捨。
+    </p>
     <div class="challenge-grid">
-      <div class="ch-card reveal reveal-delay-1"><div class="ch-num">01</div><h3 data-i18n data-zh="&#36328;&#25991;&#21270;&#35373;&#35336;&#36969;&#37197;" data-en="Cross-Cultural Adaptation">&#36328;&#25991;&#21270;&#35373;&#35336;&#36969;&#37197;</h3><p data-i18n data-zh="&#27888;&#25991;&#36681;&#20013;&#25991;&#24460;&#25490;&#29256;&#22196;&#37325;&#36305;&#29256;&#12290;&#20013;&#25991;&#23383;&#20803;&#23494;&#24230;&#39640;&#12289;&#26039;&#34892;&#35215;&#21063;&#19981;&#21516;&#65292;&#21407;&#26412;&#30340;&#29256;&#38754;&#32080;&#27083;&#38656;&#20840;&#38754;&#37325;&#26032;&#35519;&#25972;&#12290;" data-en="Converting from Thai to Chinese caused severe layout issues. Chinese characters are denser with different line-breaking rules, requiring a complete restructure of the layout system.">&#27888;&#25991;&#36681;&#20013;&#25991;&#24460;&#25490;&#29256;&#22196;&#37325;&#36305;&#29256;&#12290;&#20013;&#25991;&#23383;&#20803;&#23494;&#24230;&#39640;&#12289;&#26039;&#34892;&#35215;&#21063;&#19981;&#21516;&#65292;&#21407;&#26412;&#30340;&#29256;&#38754;&#32080;&#27083;&#38656;&#20840;&#38754;&#37325;&#26032;&#35519;&#25972;&#12290;</p></div>
-      <div class="ch-card reveal reveal-delay-2"><div class="ch-num">02</div><h3 data-i18n data-zh="&#29992;&#25142;&#24180;&#40801;&#23652;&#36328;&#24230;&#22823;" data-en="Wide User Age Range">&#29992;&#25142;&#24180;&#40801;&#23652;&#36328;&#24230;&#22823;</h3><p data-i18n data-zh="&#23433;&#32879;&#26989;&#21209;&#22296;&#38538;&#24180;&#40801;&#23652;&#24046;&#36317;&#22823;&#65292;&#24180;&#38263;&#26989;&#21209;&#21729;&#23565;&#20171;&#38754;&#25913;&#21205;&#30340;&#36969;&#25033;&#25104;&#26412;&#39640;&#65292;&#25913;&#29256;&#24133;&#24230;&#38656;&#35641;&#24910;&#25343;&#25431;&#12290;" data-en="Allianz's agent team spans a wide age range. Senior agents have higher adaptation costs for interface changes, requiring careful calibration of the redesign scope.">&#23433;&#32879;&#26989;&#21209;&#22296;&#38538;&#24180;&#40801;&#23652;&#24046;&#36317;&#22823;&#65292;&#24180;&#38263;&#26989;&#21209;&#21729;&#23565;&#20171;&#38754;&#25913;&#21205;&#30340;&#36969;&#25033;&#25104;&#26412;&#39640;&#65292;&#25913;&#29256;&#24133;&#24230;&#38656;&#35641;&#24910;&#25343;&#25431;&#12290;</p></div>
-      <div class="ch-card reveal reveal-delay-3"><div class="ch-num">03</div><h3 data-i18n data-zh="&#35222;&#35258;&#39080;&#26684;&#22312;&#22320;&#21270;" data-en="Visual Localization">&#35222;&#35258;&#39080;&#26684;&#22312;&#22320;&#21270;</h3><p data-i18n data-zh="&#21407;&#29256;&#25554;&#30059;&#39080;&#26684;&#20559;&#21521;&#27888;&#22283;&#23529;&#32654;&#65292;&#38656;&#36681;&#25563;&#28858;&#21488;&#28771;&#29992;&#25142;&#26356;&#23481;&#26131;&#25509;&#21463;&#12289;&#26356;&#35342;&#21916;&#30340;&#35222;&#35258;&#35486;&#24409;&#12290;" data-en="The original illustrations reflected Thai aesthetic preferences and needed to be transformed into a visual language that resonates with Taiwanese users.">&#21407;&#29256;&#25554;&#30059;&#39080;&#26684;&#20559;&#21521;&#27888;&#22283;&#23529;&#32654;&#65292;&#38656;&#36681;&#25563;&#28858;&#21488;&#28771;&#29992;&#25142;&#26356;&#23481;&#26131;&#25509;&#21463;&#12289;&#26356;&#35342;&#21916;&#30340;&#35222;&#35258;&#35486;&#24409;&#12290;</p></div>
+      <div class="ch-card reveal reveal-delay-1">
+        <div class="ch-num">01</div>
+        <h3 data-i18n data-zh="跨文化設計適配" data-en="Cross-Cultural Adaptation">跨文化設計適配</h3>
+        <p data-i18n
+          data-zh="泰文轉換為中文後排版嚴重跑版。中文字元密度高、斷行規則不同，原本的版面結構需全面重新調整。"
+          data-en="Converting from Thai to Chinese caused severe layout issues. Chinese characters are denser with different line-breaking rules, requiring a complete restructure of the layout system.">
+          泰文轉換為中文後排版嚴重跑版。中文字元密度高、斷行規則不同，原本的版面結構需全面重新調整。
+        </p>
+      </div>
+      <div class="ch-card reveal reveal-delay-2">
+        <div class="ch-num">02</div>
+        <h3 data-i18n data-zh="用戶年齡層跨度大" data-en="Wide User Age Range">用戶年齡層跨度大</h3>
+        <p data-i18n
+          data-zh="安聯業務團隊年齡層差距大，年長業務員對介面改動的適應成本較高，改版幅度需謹慎拿捏。"
+          data-en="Allianz's agent team spans a wide age range. Senior agents have higher adaptation costs for interface changes, requiring careful calibration of the redesign scope.">
+          安聯業務團隊年齡層差距大，年長業務員對介面改動的適應成本較高，改版幅度需謹慎拿捏。
+        </p>
+      </div>
+      <div class="ch-card reveal reveal-delay-3">
+        <div class="ch-num">03</div>
+        <h3 data-i18n data-zh="視覺風格在地化" data-en="Visual Localization">視覺風格在地化</h3>
+        <p data-i18n
+          data-zh="原版插畫風格偏向泰國審美，需轉換為台灣用戶更容易接受、更討喜的視覺語彙。"
+          data-en="The original illustrations reflected Thai aesthetic preferences and needed to be transformed into a visual language that resonates with Taiwanese users.">
+          原版插畫風格偏向泰國審美，需轉換為台灣用戶更容易接受、更討喜的視覺語彙。
+        </p>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ══ MY ROLE ══ -->
 <div class="section reveal">
   <div class="label">My Role</div>
-  <h2 data-i18n data-zh="&#25105;&#30340;&#35282;&#33394;&#33287;&#32887;&#36012;" data-en="What I Did">&#25105;&#30340;&#35282;&#33394;&#33287;&#32887;&#36012;</h2>
-  <p class="prose" data-i18n data-zh="&#28085;&#33995;&#24478;&#38656;&#27714;&#29702;&#35299;&#21040;&#26368;&#32066;&#20132;&#20184;&#30340;&#23436;&#25972;&#35373;&#35336;&#37832;&#36335;&#65292;&#20006;&#35242;&#33258;&#21069;&#24448;&#23433;&#32879;&#36914;&#34892;&#35373;&#35336;&#25552;&#22577;&#12290;" data-en="My involvement spanned the full design pipeline &mdash; from requirements gathering to final client presentation at Allianz headquarters.">&#28085;&#33995;&#24478;&#38656;&#27714;&#29702;&#35299;&#21040;&#26368;&#32066;&#20132;&#20184;&#30340;&#23436;&#25972;&#35373;&#35336;&#37832;&#36335;&#65292;&#20006;&#35242;&#33258;&#21069;&#24448;&#23433;&#32879;&#36914;&#34892;&#35373;&#35336;&#25552;&#22577;&#12290;</p>
+  <h2 data-i18n data-zh="我的角色與職責" data-en="What I Did">我的角色與職責</h2>
+  <p class="prose" data-i18n
+    data-zh="涵蓋從需求理解到最終交付的完整設計鏈路，並親自前往安聯進行設計提報。"
+    data-en="My involvement spanned the full design pipeline — from requirements gathering to final client presentation at Allianz headquarters.">
+    涵蓋從需求理解到最終交付的完整設計鏈路，並親自前往安聯進行設計提報。
+  </p>
   <div class="role-grid">
-    <div class="role-card"><div class="role-icon">&#x1F4AC;</div><h3 data-i18n data-zh="&#38656;&#27714;&#35342;&#35542;" data-en="Requirements Discovery">&#38656;&#27714;&#35342;&#35542;</h3><p data-i18n data-zh="&#33287; PM &#21450;&#23433;&#32879;&#26989;&#21209;&#31471;&#20849;&#21516;&#37328;&#28165;&#26680;&#24515;&#20351;&#29992;&#22580;&#26223;&#12289;&#29992;&#25142;&#30171;&#40670;&#65292;&#20197;&#21450;&#24478;&#27888;&#22283;&#29256;&#26412;&#38656;&#25913;&#36914;&#30340;&#26041;&#21521;&#12290;" data-en="Collaborated with PMs and Allianz's sales team to identify core use cases, user pain points, and areas for improvement from the Thai version.">&#33287; PM &#21450;&#23433;&#32879;&#26989;&#21209;&#31471;&#20849;&#21516;&#37328;&#28165;&#26680;&#24515;&#20351;&#29992;&#22580;&#26223;&#12289;&#29992;&#25142;&#30171;&#40670;&#65292;&#20197;&#21450;&#24478;&#27888;&#22283;&#29256;&#26412;&#38656;&#25913;&#36914;&#30340;&#26041;&#21521;&#12290;</p></div>
-    <div class="role-card"><div class="role-icon">&#x1F3A8;</div><h3 data-i18n data-zh="UI &#35373;&#35336; &amp; &#25554;&#30059;&#32362;&#35069;" data-en="UI Design &amp; Illustration">UI &#35373;&#35336; &amp; &#25554;&#30059;&#32362;&#35069;</h3><p data-i18n data-zh="&#37325;&#26032;&#35373;&#35336;&#20171;&#38754;&#35222;&#35258;&#39080;&#26684;&#65292;&#32362;&#35069;&#31526;&#21512;&#21488;&#28771;&#24066;&#22580;&#20559;&#22909;&#30340;&#25554;&#30059;&#20803;&#32032;&#65292;&#24314;&#31435;&#23436;&#25972;&#22294;&#31034;&#31995;&#32113;&#12290;" data-en="Redesigned the visual language and created a full set of localized illustrations including family scenarios, coverage categories, and iconography.">&#37325;&#26032;&#35373;&#35336;&#20171;&#38754;&#35222;&#35258;&#39080;&#26684;&#65292;&#32362;&#35069;&#31526;&#21512;&#21488;&#28771;&#24066;&#22580;&#20559;&#22909;&#30340;&#25554;&#30059;&#20803;&#32032;&#65292;&#24314;&#31435;&#23436;&#25972;&#22294;&#31034;&#31995;&#32113;&#12290;</p></div>
-    <div class="role-card"><div class="role-icon">&#x26A1;</div><h3 data-i18n data-zh="Prototype &#35069;&#20316;" data-en="Interactive Prototyping">Prototype &#35069;&#20316;</h3><p data-i18n data-zh="&#24314;&#31435;&#21487;&#25805;&#20316;&#30340;&#20114;&#21205;&#21407;&#22411;&#65292;&#29992;&#26044;&#20839;&#37096;&#39511;&#35657;&#33287;&#23458;&#25142;&#25552;&#22577;&#65292;&#35731;&#23433;&#32879;&#22296;&#38538;&#30452;&#25509;&#39636;&#39511;&#20778;&#21270;&#24460;&#30340;&#25805;&#20316;&#27969;&#31243;&#12290;" data-en="Built interactive prototypes for internal validation and client presentations, allowing the Allianz team to experience the optimized workflow firsthand.">&#24314;&#31435;&#21487;&#25805;&#20316;&#30340;&#20114;&#21205;&#21407;&#22411;&#65292;&#29992;&#26044;&#20839;&#37096;&#39511;&#35657;&#33287;&#23458;&#25142;&#25552;&#22577;&#65292;&#35731;&#23433;&#32879;&#22296;&#38538;&#30452;&#25509;&#39636;&#39511;&#20778;&#21270;&#24460;&#30340;&#25805;&#20316;&#27969;&#31243;&#12290;</p></div>
-    <div class="role-card"><div class="role-icon">&#x1F3A4;</div><h3 data-i18n data-zh="&#23458;&#25142;&#25552;&#22577;&#33287;&#28317;&#36890;" data-en="Client Presentation">&#23458;&#25142;&#25552;&#22577;&#33287;&#28317;&#36890;</h3><p data-i18n data-zh="&#35242;&#33258;&#21069;&#24448;&#23433;&#32879;&#25552;&#22577;&#65292;&#35498;&#26126;&#35373;&#35336;&#27770;&#31574;&#29702;&#30001;&#65292;&#36879;&#36942; Prototype &#23637;&#31034;&#36880;&#27493;&#29554;&#24471;&#23458;&#25142;&#35469;&#21487;&#33287;&#20449;&#20219;&#12290;" data-en="Presented on-site at Allianz, explaining the rationale behind each design decision. Through prototype demos, gradually earned client trust and approval.">&#35242;&#33258;&#21069;&#24448;&#23433;&#32879;&#25552;&#22577;&#65292;&#35498;&#26126;&#35373;&#35336;&#27770;&#31574;&#29702;&#30001;&#65292;&#36879;&#36942; Prototype &#23637;&#31034;&#36880;&#27493;&#29554;&#24471;&#23458;&#25142;&#35469;&#21487;&#33287;&#20449;&#20219;&#12290;</p></div>
+    <div class="role-card">
+      <div class="role-icon">💬</div>
+      <h3 data-i18n data-zh="需求討論" data-en="Requirements Discovery">需求討論</h3>
+      <p data-i18n
+        data-zh="與 PM 及安聯業務端共同釐清核心使用情境、用戶痛點，以及泰國版本需改進的方向。"
+        data-en="Collaborated with PMs and Allianz's sales team to identify core use cases, user pain points, and areas for improvement from the Thai version.">
+        與 PM 及安聯業務端共同釐清核心使用情境、用戶痛點，以及泰國版本需改進的方向。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🎨</div>
+      <h3 data-i18n data-zh="UI 設計 & 插畫繪製" data-en="UI Design & Illustration">UI 設計 & 插畫繪製</h3>
+      <p data-i18n
+        data-zh="重新設計介面視覺風格，繪製符合台灣市場偏好的插畫元素，建立完整圖示系統。"
+        data-en="Redesigned the visual language and created a full set of localized illustrations including family scenarios, coverage categories, and iconography.">
+        重新設計介面視覺風格，繪製符合台灣市場偏好的插畫元素，建立完整圖示系統。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">⚡</div>
+      <h3 data-i18n data-zh="Prototype 製作" data-en="Interactive Prototyping">Prototype 製作</h3>
+      <p data-i18n
+        data-zh="建立可操作的互動原型，用於內部驗證與客戶提報，讓安聯團隊直接體驗優化後的操作流程。"
+        data-en="Built interactive prototypes for internal validation and client presentations, allowing the Allianz team to experience the optimized workflow firsthand.">
+        建立可操作的互動原型，用於內部驗證與客戶提報，讓安聯團隊直接體驗優化後的操作流程。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🎤</div>
+      <h3 data-i18n data-zh="客戶提報與溝通" data-en="Client Presentation">客戶提報與溝通</h3>
+      <p data-i18n
+        data-zh="親自前往安聯提報，說明設計決策理由，透過 Prototype 展示逐步獲得客戶認可與信任。"
+        data-en="Presented on-site at Allianz, explaining the rationale behind each design decision. Through prototype demos, gradually earned client trust and approval.">
+        親自前往安聯提報，說明設計決策理由，透過 Prototype 展示逐步獲得客戶認可與信任。
+      </p>
+    </div>
   </div>
 </div>
 
+<!-- ══ PROCESS ══ -->
 <div class="section reveal">
   <div class="label">Process</div>
-  <h2 data-i18n data-zh="&#35373;&#35336;&#27969;&#31243;" data-en="Design Process">&#35373;&#35336;&#27969;&#31243;</h2>
+  <h2 data-i18n data-zh="設計流程" data-en="Design Process">設計流程</h2>
   <div class="timeline">
-    <div class="tl-step"><div class="tl-dot"></div><h4 data-i18n data-zh="&#38656;&#27714;&#20998;&#26512;" data-en="Research">&#38656;&#27714;&#20998;&#26512;</h4><p data-i18n data-zh="&#30740;&#31350;&#27888;&#22283;&#29256;&#26412;<br>&#37328;&#28165;&#22312;&#22320;&#21270;&#38656;&#27714;" data-en="Analyzed Thai version<br>Defined localization needs">&#30740;&#31350;&#27888;&#22283;&#29256;&#26412;<br>&#37328;&#28165;&#22312;&#22320;&#21270;&#38656;&#27714;</p></div>
-    <div class="tl-step"><div class="tl-dot"></div><h4>Wireflow</h4><p data-i18n data-zh="&#37325;&#26032;&#35215;&#21123;&#38913;&#38754;&#27969;&#31243;<br>&#33287;&#36039;&#35338;&#26550;&#27083;" data-en="Restructured page flows<br>&amp; information architecture">&#37325;&#26032;&#35215;&#21123;&#38913;&#38754;&#27969;&#31243;<br>&#33287;&#36039;&#35338;&#26550;&#27083;</p></div>
-    <div class="tl-step"><div class="tl-dot"></div><h4 data-i18n data-zh="UI &amp; &#25554;&#30059;&#35373;&#35336;" data-en="UI &amp; Illustration">UI &amp; &#25554;&#30059;&#35373;&#35336;</h4><p data-i18n data-zh="&#35373;&#35336;&#35222;&#35258;&#39080;&#26684;<br>&#32362;&#35069;&#22312;&#22320;&#21270;&#25554;&#30059;" data-en="Designed visual language<br>Created localized artwork">&#35373;&#35336;&#35222;&#35258;&#39080;&#26684;<br>&#32362;&#35069;&#22312;&#22320;&#21270;&#25554;&#30059;</p></div>
-    <div class="tl-step"><div class="tl-dot"></div><h4>Prototype</h4><p data-i18n data-zh="&#35069;&#20316;&#21487;&#20114;&#21205;&#21407;&#22411;<br>&#20839;&#37096;&#28204;&#35430;&#39511;&#35657;" data-en="Built interactive prototype<br>Internal testing &amp; validation">&#35069;&#20316;&#21487;&#20114;&#21205;&#21407;&#22411;<br>&#20839;&#37096;&#28204;&#35430;&#39511;&#35657;</p></div>
-    <div class="tl-step"><div class="tl-dot"></div><h4 data-i18n data-zh="&#23458;&#25142;&#25552;&#22577;" data-en="Present &amp; Iterate">&#23458;&#25142;&#25552;&#22577;</h4><p data-i18n data-zh="&#23433;&#32879;&#29694;&#22580;&#23637;&#31034;<br>&#26681;&#25818;&#22238;&#39243;&#36845;&#20195;" data-en="On-site client demo<br>Feedback-driven refinement">&#23433;&#32879;&#29694;&#22580;&#23637;&#31034;<br>&#26681;&#25818;&#22238;&#39243;&#36845;&#20195;</p></div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="需求分析" data-en="Research">需求分析</h4>
+      <p data-i18n data-zh="研究泰國版本<br>釐清在地化需求" data-en="Analyzed Thai version<br>Defined localization needs">研究泰國版本<br>釐清在地化需求</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4>Wireflow</h4>
+      <p data-i18n data-zh="重新規劃頁面流程<br>與資訊架構" data-en="Restructured page flows<br>& information architecture">重新規劃頁面流程<br>與資訊架構</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="UI & 插畫設計" data-en="UI & Illustration">UI & 插畫設計</h4>
+      <p data-i18n data-zh="設計視覺風格<br>繪製在地化插畫" data-en="Designed visual language<br>Created localized artwork">設計視覺風格<br>繪製在地化插畫</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4>Prototype</h4>
+      <p data-i18n data-zh="製作可互動原型<br>內部測試驗證" data-en="Built interactive prototype<br>Internal testing & validation">製作可互動原型<br>內部測試驗證</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="客戶提報" data-en="Present & Iterate">客戶提報</h4>
+      <p data-i18n data-zh="安聯現場展示<br>根據回饋迭代" data-en="On-site client demo<br>Feedback-driven refinement">安聯現場展示<br>根據回饋迭代</p>
+    </div>
   </div>
 </div>
 
+<!-- ══ DESIGN DECISIONS ══ -->
 <div class="section reveal">
   <div class="label">Design Decisions</div>
-  <h2 data-i18n data-zh="&#38364;&#37749;&#35373;&#35336;&#27770;&#31574;" data-en="Key Design Decisions">&#38364;&#37749;&#35373;&#35336;&#27770;&#31574;</h2>
+  <h2 data-i18n data-zh="關鍵設計決策" data-en="Key Design Decisions">關鍵設計決策</h2>
   <div class="decision-box">
-    <h3 data-i18n data-zh="&#28472;&#36914;&#24335;&#20778;&#21270; vs. &#22823;&#24133;&#25913;&#29256;" data-en="Incremental Refinement vs. Full Redesign">&#28472;&#36914;&#24335;&#20778;&#21270; vs. &#22823;&#24133;&#25913;&#29256;</h3>
-    <p data-i18n data-zh="&#21021;&#26399;&#26366;&#35215;&#21123;&#22823;&#24133;&#24230;&#20171;&#38754;&#25913;&#29256;&#65292;&#20294;&#32771;&#37327;&#23433;&#32879;&#26989;&#21209;&#22296;&#38538;&#24180;&#40801;&#36328;&#24230;&#22823;&#65292;&#24180;&#38263;&#26989;&#21209;&#21729;&#24050;&#32722;&#24931;&#21407;&#26412;&#30340;&#25353;&#37397;&#20301;&#32622;&#33287;&#25805;&#20316;&#37007;&#36655;&#65292;&#36019;&#28982;&#22823;&#25913;&#21487;&#33021;&#23566;&#33268;&#23416;&#32722;&#25104;&#26412;&#36942;&#39640;&#12289;&#24433;&#38911;&#24037;&#20316;&#25928;&#29575;&#12290;&#26368;&#32066;&#25505;&#21462;<strong>&#12300;&#26694;&#26550;&#19981;&#21205;&#12289;&#36074;&#24863;&#21319;&#32026;&#12301;</strong>&#30340;&#28472;&#36914;&#31574;&#30053;&#8212;&#8212;&#25353;&#37397;&#37197;&#32622;&#20445;&#30041;&#33290;&#29256;&#26694;&#26550;&#65292;&#20294;&#22312;&#35222;&#35258;&#39080;&#26684;&#12289;hover/click &#20132;&#20114;&#22238;&#39243;&#21450;&#25972;&#39636;&#19968;&#33268;&#24615;&#19978;&#20840;&#38754;&#25552;&#21319;&#12290;" data-en="We initially planned a major redesign, but reconsidered after understanding that Allianz's agent team has a wide age range. Senior agents were already accustomed to existing button placements and interaction patterns &mdash; a drastic overhaul risked high learning costs and reduced productivity. We ultimately adopted an <strong>&ldquo;upgrade the quality, preserve the framework&rdquo;</strong> strategy: maintaining the core layout structure while elevating visual polish, interaction feedback consistency, and overall coherence.">&#21021;&#26399;&#26366;&#35215;&#21123;&#22823;&#24133;&#24230;&#20171;&#38754;&#25913;&#29256;&#65292;&#20294;&#32771;&#37327;&#23433;&#32879;&#26989;&#21209;&#22296;&#38538;&#24180;&#40801;&#36328;&#24230;&#22823;&#65292;&#24180;&#38263;&#26989;&#21209;&#21729;&#24050;&#32722;&#24931;&#21407;&#26412;&#30340;&#25353;&#37397;&#20301;&#32622;&#33287;&#25805;&#20316;&#37007;&#36655;&#65292;&#36019;&#28982;&#22823;&#25913;&#21487;&#33021;&#23566;&#33268;&#23416;&#32722;&#25104;&#26412;&#36942;&#39640;&#12289;&#24433;&#38911;&#24037;&#20316;&#25928;&#29575;&#12290;&#26368;&#32066;&#25505;&#21462;<strong>&#12300;&#26694;&#26550;&#19981;&#21205;&#12289;&#36074;&#24863;&#21319;&#32026;&#12301;</strong>&#30340;&#28472;&#36914;&#31574;&#30053;&#8212;&#8212;&#25353;&#37397;&#37197;&#32622;&#20445;&#30041;&#33290;&#29256;&#26694;&#26550;&#65292;&#20294;&#22312;&#35222;&#35258;&#39080;&#26684;&#12289;hover/click &#20132;&#20114;&#22238;&#39243;&#21450;&#25972;&#39636;&#19968;&#33268;&#24615;&#19978;&#20840;&#38754;&#25552;&#21319;&#12290;</p>
+    <h3 data-i18n data-zh="漸進式優化 vs. 大幅改版" data-en="Incremental Refinement vs. Full Redesign">漸進式優化 vs. 大幅改版</h3>
+    <p data-i18n
+      data-zh="初期曾規劃大幅度介面改版，但考量安聯業務團隊年齡跨度大，年長業務員已習慣原本的按鈕位置與操作邏輯，貿然大改可能導致學習成本過高、影響工作效率。最終採取<strong>「框架不動、質感升級」</strong>的漸進策略——按鈕配置保留舊版框架，但在視覺風格、hover/click 互動回饋及整體一致性上全面提升。"
+      data-en="We initially planned a major redesign, but reconsidered after understanding that Allianz's agent team has a wide age range. Senior agents were already accustomed to existing button placements — a drastic overhaul risked high learning costs and reduced productivity. We ultimately adopted an <strong>&ldquo;upgrade the quality, preserve the framework&rdquo;</strong> strategy.">
+      初期曾規劃大幅度介面改版，但考量安聯業務團隊年齡跨度大，年長業務員已習慣原本的按鈕位置與操作邏輯，貿然大改可能導致學習成本過高、影響工作效率。最終採取<strong>「框架不動、質感升級」</strong>的漸進策略——按鈕配置保留舊版框架，但在視覺風格、hover/click 互動回饋及整體一致性上全面提升。
+    </p>
   </div>
   <div class="ba-row">
-    <div class="ba-card before"><div class="ba-tag" data-i18n data-zh="&#20778;&#21270;&#21069;&#30340;&#21839;&#38988;" data-en="Before &mdash; Issues Identified">&#20778;&#21270;&#21069;&#30340;&#21839;&#38988;</div><ul><li data-i18n data-zh="&#27888;&#25991;&#36681;&#20013;&#25991;&#24460;&#25490;&#29256;&#36305;&#29256;&#65292;&#25991;&#23383;&#28322;&#20986;" data-en="Broken layouts after Thai-to-Chinese conversion, text overflow">&#27888;&#25991;&#36681;&#20013;&#25991;&#24460;&#25490;&#29256;&#36305;&#29256;&#65292;&#25991;&#23383;&#28322;&#20986;</li><li data-i18n data-zh="&#25554;&#30059;&#39080;&#26684;&#20559;&#21521;&#27888;&#22283;&#23529;&#32654;&#65292;&#36776;&#35672;&#24230;&#20302;" data-en="Illustration style reflected Thai aesthetics, low local relevance">&#25554;&#30059;&#39080;&#26684;&#20559;&#21521;&#27888;&#22283;&#23529;&#32654;&#65292;&#36776;&#35672;&#24230;&#20302;</li><li data-i18n data-zh="&#25353;&#37397; hover&#12289;click &#29376;&#24907;&#19981;&#19968;&#33268;" data-en="Inconsistent hover and click states across buttons">&#25353;&#37397; hover&#12289;click &#29376;&#24907;&#19981;&#19968;&#33268;</li><li data-i18n data-zh="&#20013;&#25991;&#35486;&#22659;&#19979;&#36039;&#35338;&#32232;&#25490;&#19981;&#22816;&#30452;&#35258;" data-en="Information layout not optimized for Chinese reading patterns">&#20013;&#25991;&#35486;&#22659;&#19979;&#36039;&#35338;&#32232;&#25490;&#19981;&#22816;&#30452;&#35258;</li></ul></div>
-    <div class="ba-card after"><div class="ba-tag" data-i18n data-zh="&#20778;&#21270;&#24460;&#30340;&#25913;&#21892;" data-en="After &mdash; Improvements Made">&#20778;&#21270;&#24460;&#30340;&#25913;&#21892;</div><ul><li data-i18n data-zh="&#37341;&#23565;&#20013;&#25991;&#37325;&#26032;&#35373;&#35336;&#25490;&#29256;&#32080;&#27083;&#33287;&#26039;&#34892;" data-en="Rebuilt typography system with proper Chinese line-breaking">&#37341;&#23565;&#20013;&#25991;&#37325;&#26032;&#35373;&#35336;&#25490;&#29256;&#32080;&#27083;&#33287;&#26039;&#34892;</li><li data-i18n data-zh="&#25554;&#30059;&#35519;&#25972;&#28858;&#21488;&#28771;&#24066;&#22580;&#20559;&#22909;&#30340;&#35342;&#21916;&#39080;&#26684;" data-en="Illustrations redesigned to match Taiwanese visual preferences">&#25554;&#30059;&#35519;&#25972;&#28858;&#21488;&#28771;&#24066;&#22580;&#20559;&#22909;&#30340;&#35342;&#21916;&#39080;&#26684;</li><li data-i18n data-zh="&#32113;&#19968;&#25152;&#26377;&#20114;&#21205;&#29376;&#24907;&#30340;&#35222;&#35258;&#22238;&#39243;" data-en="Unified interaction feedback across all interactive elements">&#32113;&#19968;&#25152;&#26377;&#20114;&#21205;&#29376;&#24907;&#30340;&#35222;&#35258;&#22238;&#39243;</li><li data-i18n data-zh="&#20445;&#30041;&#25353;&#37397;&#37197;&#32622;&#26694;&#26550;&#65292;&#38477;&#20302;&#23416;&#32722;&#25104;&#26412;" data-en="Preserved button layout framework to minimize learning curve">&#20445;&#30041;&#25353;&#37397;&#37197;&#32622;&#26694;&#26550;&#65292;&#38477;&#20302;&#23416;&#32722;&#25104;&#26412;</li></ul></div>
+    <div class="ba-card before">
+      <div class="ba-tag" data-i18n data-zh="優化前的問題" data-en="Before — Issues Identified">優化前的問題</div>
+      <ul>
+        <li data-i18n data-zh="泰文轉中文後排版跑版，文字溢出" data-en="Broken layouts after Thai-to-Chinese conversion, text overflow">泰文轉中文後排版跑版，文字溢出</li>
+        <li data-i18n data-zh="插畫風格偏向泰國審美，在地辨識度低" data-en="Illustration style reflected Thai aesthetics, low local relevance">插畫風格偏向泰國審美，在地辨識度低</li>
+        <li data-i18n data-zh="按鈕 hover、click 狀態不一致" data-en="Inconsistent hover and click states across buttons">按鈕 hover、click 狀態不一致</li>
+        <li data-i18n data-zh="中文語境下資訊編排不夠直覺" data-en="Information layout not optimized for Chinese reading patterns">中文語境下資訊編排不夠直覺</li>
+      </ul>
+    </div>
+    <div class="ba-card after">
+      <div class="ba-tag" data-i18n data-zh="優化後的改善" data-en="After — Improvements Made">優化後的改善</div>
+      <ul>
+        <li data-i18n data-zh="針對中文重新設計排版結構與斷行邏輯" data-en="Rebuilt typography system with proper Chinese line-breaking">針對中文重新設計排版結構與斷行邏輯</li>
+        <li data-i18n data-zh="插畫調整為台灣市場偏好的討喜風格" data-en="Illustrations redesigned to match Taiwanese visual preferences">插畫調整為台灣市場偏好的討喜風格</li>
+        <li data-i18n data-zh="統一所有互動狀態的視覺回饋" data-en="Unified interaction feedback across all interactive elements">統一所有互動狀態的視覺回饋</li>
+        <li data-i18n data-zh="保留按鈕配置框架，降低學習成本" data-en="Preserved button layout framework to minimize learning curve">保留按鈕配置框架，降低學習成本</li>
+      </ul>
+    </div>
   </div>
-  <p class="prose" style="margin-top:1rem;" data-i18n data-zh="&#22240;&#26989;&#21209;&#24120;&#38656;&#20197;&#24179;&#26495;&#36914;&#34892;&#38263;&#26178;&#38291;&#35498;&#26126;&#33287;&#25805;&#20316;&#65292;&#22312;&#33394;&#24425;&#35336;&#30059;&#19978;&#20063;&#36914;&#34892;&#20102;&#35519;&#25972;&#33287;&#20778;&#21270;&#65292;&#30433;&#21487;&#33021;&#36991;&#20813;&#38263;&#26178;&#38291;&#20351;&#29992;&#24341;&#36215;&#30340;&#35222;&#35258;&#30130;&#21214;&#12290;&#21516;&#26178;&#35373;&#35336;&#20102;&#23436;&#25972;&#30340; <strong>Light Mode &#33287; Dark Mode</strong> &#38617;&#20027;&#38988;&#25903;&#25588;&#65292;&#30906;&#20445;&#22312;&#20219;&#20309;&#20809;&#32218;&#29872;&#22659;&#19979;&#37117;&#26377;&#33391;&#22909;&#30340;&#38321;&#35712;&#39636;&#39511;&#12290;" data-en="Since agents frequently use the tablet for extended client presentations, we also optimized the color palette to <strong>reduce visual fatigue during prolonged use</strong>. Additionally, we designed complete <strong>Light Mode and Dark Mode</strong> themes to ensure comfortable readability across all lighting conditions.">&#22240;&#26989;&#21209;&#24120;&#38656;&#20197;&#24179;&#26495;&#36914;&#34892;&#38263;&#26178;&#38291;&#35498;&#26126;&#33287;&#25805;&#20316;&#65292;&#22312;&#33394;&#24425;&#35336;&#30059;&#19978;&#20063;&#36914;&#34892;&#20102;&#35519;&#25972;&#33287;&#20778;&#21270;&#65292;&#30433;&#21487;&#33021;&#36991;&#20813;&#38263;&#26178;&#38291;&#20351;&#29992;&#24341;&#36215;&#30340;&#35222;&#35258;&#30130;&#21214;&#12290;&#21516;&#26178;&#35373;&#35336;&#20102;&#23436;&#25972;&#30340; <strong>Light Mode &#33287; Dark Mode</strong> &#38617;&#20027;&#38988;&#25903;&#25588;&#65292;&#30906;&#20445;&#22312;&#20219;&#20309;&#20809;&#32218;&#29872;&#22659;&#19979;&#37117;&#26377;&#33391;&#22909;&#30340;&#38321;&#35712;&#39636;&#39511;&#12290;</p>
+  <p class="prose" style="margin-top:1rem;" data-i18n
+    data-zh="因業務員常需以平板進行長時間說明與操作，色彩計畫也進行了調整與優化，盡可能避免長時間使用造成的視覺疲勞。同時設計了完整的 <strong>Light Mode 與 Dark Mode</strong> 雙主題，確保在任何光線環境下都有良好的閱讀體驗。"
+    data-en="Since agents frequently use the tablet for extended client presentations, we optimized the color palette to <strong>reduce visual fatigue during prolonged use</strong>, and designed complete <strong>Light Mode and Dark Mode</strong> themes for all lighting conditions.">
+    因業務員常需以平板進行長時間說明與操作，色彩計畫也進行了調整與優化，盡可能避免長時間使用造成的視覺疲勞。同時設計了完整的 <strong>Light Mode 與 Dark Mode</strong> 雙主題，確保在任何光線環境下都有良好的閱讀體驗。
+  </p>
 </div>
 
+<!-- ══ VISUAL DESIGN ══ -->
 <div class="showcase-band reveal">
   <div class="showcase-inner">
     <div class="label">Visual Design</div>
-    <h2 data-i18n data-zh="&#35222;&#35258;&#35373;&#35336;&#25104;&#26524;" data-en="Design Showcase">&#35222;&#35258;&#35373;&#35336;&#25104;&#26524;</h2>
-    <p class="prose" data-i18n data-zh="&#20197;&#19979;&#28858;&#37325;&#26032;&#35373;&#35336;&#20043;&#34395;&#27083;&#29256;&#26412;&#65292;&#23637;&#31034;&#35373;&#35336;&#26041;&#21521;&#33287;&#35222;&#35258;&#39080;&#26684;&#12290;" data-en="Concept designs demonstrating the visual direction and design approach.">&#20197;&#19979;&#28858;&#37325;&#26032;&#35373;&#35336;&#20043;&#34395;&#27083;&#29256;&#26412;&#65292;&#23637;&#31034;&#35373;&#35336;&#26041;&#21521;&#33287;&#35222;&#35258;&#39080;&#26684;&#12290;</p>
+    <h2 data-i18n data-zh="視覺設計成果" data-en="Design Showcase">視覺設計成果</h2>
+    <p class="prose" data-i18n
+      data-zh="以下為重新設計之概念版本，展示設計方向與視覺風格。"
+      data-en="Concept designs demonstrating the visual direction and design approach.">
+      以下為重新設計之概念版本，展示設計方向與視覺風格。
+    </p>
     <div class="img-grid">
-      <div class="img-cell"><img src="https://static.wixstatic.com/media/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png/v1/fill/w_900,h_600,al_c,q_90,enc_avif,quality_auto/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png" alt="UI Design"><div class="img-caption" data-i18n data-zh="&#20197;&#20351;&#29992;&#32773;&#39636;&#39511;&#28858;&#20778;&#20808;&#30340; UI &#35373;&#35336;&#65292;&#31526;&#21512;&#20225;&#26989;&#24418;&#35937;&#20006;&#25552;&#21319;&#25805;&#20316;&#36074;&#24863;" data-en="User experience-first UI design, aligned with brand identity while elevating interaction quality">&#20197;&#20351;&#29992;&#32773;&#39636;&#39511;&#28858;&#20778;&#20808;&#30340; UI &#35373;&#35336;&#65292;&#31526;&#21512;&#20225;&#26989;&#24418;&#35937;&#20006;&#25552;&#21319;&#25805;&#20316;&#36074;&#24863;</div></div>
-      <div class="img-cell"><img src="https://static.wixstatic.com/media/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png/v1/fill/w_900,h_470,al_c,q_90,enc_avif,quality_auto/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png" alt="Color System"><div class="img-caption" data-i18n data-zh="&#33394;&#24425;&#35336;&#30059;&#20778;&#21270;&#65292;&#38477;&#20302;&#38263;&#26178;&#38291;&#20351;&#29992;&#30340;&#35222;&#35258;&#30130;&#21214;" data-en="Optimized color palette designed to reduce visual fatigue during extended use">&#33394;&#24425;&#35336;&#30059;&#20778;&#21270;&#65292;&#38477;&#20302;&#38263;&#26178;&#38291;&#20351;&#29992;&#30340;&#35222;&#35258;&#30130;&#21214;</div></div>
-      <div class="img-cell"><img src="https://static.wixstatic.com/media/8b67a7_b74e756387e246af927718f3944faa84~mv2.png/v1/fill/w_900,h_570,al_c,q_90,enc_avif,quality_auto/8b67a7_b74e756387e246af927718f3944faa84~mv2.png" alt="Illustrations"><div class="img-caption" data-i18n data-zh="&#22312;&#22320;&#21270;&#25554;&#30059;&#31995;&#32113;&#65292;&#20197;&#36259;&#21619;&#24773;&#22659;&#24341;&#23566;&#23458;&#25142;&#25506;&#32034;&#38656;&#27714;" data-en="Localized illustration system with engaging scenarios to guide needs exploration">&#22312;&#22320;&#21270;&#25554;&#30059;&#31995;&#32113;&#65292;&#20197;&#36259;&#21619;&#24773;&#22659;&#24341;&#23566;&#23458;&#25142;&#25506;&#32034;&#38656;&#27714;</div></div>
-      <div class="img-cell"><img src="https://static.wixstatic.com/media/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png/v1/fill/w_900,h_640,al_c,q_90,enc_avif,quality_auto/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png" alt="Seasonal Themes"><div class="img-caption" data-i18n data-zh="&#30331;&#20837;&#38913;&#38754;&#22240;&#25033;&#23395;&#31680;&#35722;&#21270;&#12289;&#31680;&#24950;&#31561;&#20027;&#38988;&#25554;&#30059;&#65292;&#35920;&#23500;&#35222;&#35258;&#21576;&#29694;" data-en="Seasonal and festive themed login illustrations for a richer visual experience">&#30331;&#20837;&#38913;&#38754;&#22240;&#25033;&#23395;&#31680;&#35722;&#21270;&#12289;&#31680;&#24950;&#31561;&#20027;&#38988;&#25554;&#30059;&#65292;&#35920;&#23500;&#35222;&#35258;&#21576;&#29694;</div></div>
-      <div class="img-cell img-cell--wide"><img src="https://static.wixstatic.com/media/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png/v1/fill/w_1200,h_770,al_c,q_90,enc_avif,quality_auto/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png" alt="Loading Animation"><div class="img-caption" data-i18n data-zh="&#20197; Logo &#28858;&#20027;&#36896;&#22411;&#30340;&#24494;&#21205;&#30059;&#35373;&#35336;&#65292;&#38477;&#20302;&#36039;&#26009;&#19979;&#36617;&#31561;&#24453;&#26178;&#30340;&#36000;&#38754;&#24863;&#21463;" data-en="Logo-based micro-animation designed to ease perceived wait time during data loading">&#20197; Logo &#28858;&#20027;&#36896;&#22411;&#30340;&#24494;&#21205;&#30059;&#35373;&#35336;&#65292;&#38477;&#20302;&#36039;&#26009;&#19979;&#36617;&#31561;&#24453;&#26178;&#30340;&#36000;&#38754;&#24863;&#21463;</div></div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png/v1/fill/w_900,h_600,al_c,q_90,enc_avif,quality_auto/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png" alt="UI Design">
+        <div class="img-caption" data-i18n data-zh="以使用者體驗為優先的 UI 設計，符合企業形象並提升操作質感" data-en="User experience-first UI design, aligned with brand identity while elevating interaction quality">以使用者體驗為優先的 UI 設計，符合企業形象並提升操作質感</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png/v1/fill/w_900,h_470,al_c,q_90,enc_avif,quality_auto/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png" alt="Color System">
+        <div class="img-caption" data-i18n data-zh="色彩計畫優化，降低長時間使用的視覺疲勞" data-en="Optimized color palette designed to reduce visual fatigue during extended use">色彩計畫優化，降低長時間使用的視覺疲勞</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_b74e756387e246af927718f3944faa84~mv2.png/v1/fill/w_900,h_570,al_c,q_90,enc_avif,quality_auto/8b67a7_b74e756387e246af927718f3944faa84~mv2.png" alt="Illustrations">
+        <div class="img-caption" data-i18n data-zh="在地化插畫系統，以趣味情境引導客戶探索保險需求" data-en="Localized illustration system with engaging scenarios to guide needs exploration">在地化插畫系統，以趣味情境引導客戶探索保險需求</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png/v1/fill/w_900,h_640,al_c,q_90,enc_avif,quality_auto/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png" alt="Seasonal Themes">
+        <div class="img-caption" data-i18n data-zh="登入頁面因應季節變化、節慶等主題插畫，豐富視覺呈現" data-en="Seasonal and festive themed login illustrations for a richer visual experience">登入頁面因應季節變化、節慶等主題插畫，豐富視覺呈現</div>
+      </div>
+      <div class="img-cell img-cell--wide">
+        <img src="https://static.wixstatic.com/media/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png/v1/fill/w_1200,h_770,al_c,q_90,enc_avif,quality_auto/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png" alt="Loading Animation">
+        <div class="img-caption" data-i18n data-zh="以 Logo 為主造型的微動畫設計，降低資料載入等待時的負面感受" data-en="Logo-based micro-animation designed to ease perceived wait time during data loading">以 Logo 為主造型的微動畫設計，降低資料載入等待時的負面感受</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ══ DESIGN SYSTEM ══ -->
 <div class="section reveal">
   <div class="label">Design System</div>
-  <h2 data-i18n data-zh="&#35222;&#35258;&#35215;&#31684;" data-en="Visual Specifications">&#35222;&#35258;&#35215;&#31684;</h2>
+  <h2 data-i18n data-zh="視覺規範" data-en="Visual Specifications">視覺規範</h2>
   <div class="specs-row">
-    <div class="spec-group"><h4>Colors</h4><div class="color-swatches"><div><div class="swatch" style="background:#193B98"></div><div class="swatch-label">#193B98</div></div><div><div class="swatch" style="background:#4F78CF"></div><div class="swatch-label">#4F78CF</div></div><div><div class="swatch" style="background:#D9E8F8"></div><div class="swatch-label">#D9E8F8</div></div><div><div class="swatch" style="background:#E7EFF6"></div><div class="swatch-label">#E7EFF6</div></div><div><div class="swatch" style="background:#C6D1E1"></div><div class="swatch-label">#C6D1E1</div></div></div></div>
-    <div class="spec-group"><h4>Typography</h4><div class="font-preview" style="font-family:'Noto Sans TC',sans-serif">Aa Allianz</div><div class="font-name">Noto Sans TC</div><div class="font-preview" style="font-family:'Outfit',sans-serif;margin-top:.8rem">Aa Discover</div><div class="font-name">Outfit</div></div>
-    <div class="spec-group"><h4>Tools</h4><div class="tool-icons"><div class="tool-icon">Sketch</div><div class="tool-icon">Ps</div><div class="tool-icon">Ai</div><div class="tool-icon">Ae</div></div></div>
+    <div class="spec-group">
+      <h4>Colors</h4>
+      <div class="color-swatches">
+        <div><div class="swatch" style="background:#193B98"></div><div class="swatch-label">#193B98</div></div>
+        <div><div class="swatch" style="background:#4F78CF"></div><div class="swatch-label">#4F78CF</div></div>
+        <div><div class="swatch" style="background:#D9E8F8"></div><div class="swatch-label">#D9E8F8</div></div>
+        <div><div class="swatch" style="background:#E7EFF6"></div><div class="swatch-label">#E7EFF6</div></div>
+        <div><div class="swatch" style="background:#C6D1E1"></div><div class="swatch-label">#C6D1E1</div></div>
+      </div>
+    </div>
+    <div class="spec-group">
+      <h4>Typography</h4>
+      <div class="font-preview" style="font-family:'Noto Sans TC',sans-serif">Aa Allianz</div>
+      <div class="font-name">Noto Sans TC</div>
+      <div class="font-preview" style="font-family:'Outfit',sans-serif;margin-top:.8rem">Aa Discover</div>
+      <div class="font-name">Outfit</div>
+    </div>
+    <div class="spec-group">
+      <h4>Tools</h4>
+      <div class="tool-icons">
+        <div class="tool-icon">Sketch</div>
+        <div class="tool-icon">Ps</div>
+        <div class="tool-icon">Ai</div>
+        <div class="tool-icon">Ae</div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- ══ STAT HERO ══ -->
 <div class="stat-hero reveal">
   <div class="stat-hero-inner">
     <div class="stat-big">86<span>%</span></div>
-    <p class="stat-desc" data-i18n data-zh="&#26681;&#25818;&#35519;&#26597;&#65292;&#33287;&#20854;&#20182;&#20445;&#38570;&#26989;&#32773;&#27604;&#36611;&#65292;&#26377; 86% &#30340;&#23458;&#25142;&#23565;&#26044;&#12300;&#23433;&#32879; i &#25506;&#32034;&#12301;&#26377;&#26997;&#39640;&#30340;&#28415;&#24847;&#24230;&#25805;&#20316;&#39636;&#39511;&#12290;" data-en="Client satisfaction rate for Allianz Discover &mdash; significantly outperforming comparable insurance industry tools in user experience surveys.">&#26681;&#25818;&#35519;&#26597;&#65292;&#33287;&#20854;&#20182;&#20445;&#38570;&#26989;&#32773;&#27604;&#36611;&#65292;&#26377; 86% &#30340;&#23458;&#25142;&#23565;&#26044;&#12300;&#23433;&#32879; i &#25506;&#32034;&#12301;&#26377;&#26997;&#39640;&#30340;&#28415;&#24847;&#24230;&#25805;&#20316;&#39636;&#39511;&#12290;</p>
+    <p class="stat-desc" data-i18n
+      data-zh="根據調查，與其他保險業者相比，有 86% 的客戶對「安聯 i 探索」的操作體驗有極高的滿意度。"
+      data-en="Client satisfaction rate for Allianz Discover — significantly outperforming comparable insurance industry tools in user experience surveys.">
+      根據調查，與其他保險業者相比，有 86% 的客戶對「安聯 i 探索」的操作體驗有極高的滿意度。
+    </p>
   </div>
 </div>
 
+<!-- ══ OUTCOMES ══ -->
 <div class="section reveal">
   <div class="label">Outcomes</div>
-  <h2 data-i18n data-zh="&#23560;&#26696;&#25104;&#26524;" data-en="Project Results">&#23560;&#26696;&#25104;&#26524;</h2>
+  <h2 data-i18n data-zh="專案成果" data-en="Project Results">專案成果</h2>
   <div class="outcomes-grid">
-    <div class="outcome"><div class="outcome-val">100%</div><div class="outcome-label" data-i18n data-zh="&#20013;&#25991;&#25490;&#29256;&#21839;&#38988;<br>&#20840;&#38754;&#20462;&#24489;" data-en="Chinese Typography<br>Issues Resolved">&#20013;&#25991;&#25490;&#29256;&#21839;&#38988;<br>&#20840;&#38754;&#20462;&#24489;</div></div>
-    <div class="outcome"><div class="outcome-val">2</div><div class="outcome-label" data-i18n data-zh="Light / Dark<br>&#23436;&#25972;&#20027;&#38988;&#25903;&#25588;" data-en="Complete Themes<br>Light &amp; Dark Mode">Light / Dark<br>&#23436;&#25972;&#20027;&#38988;&#25903;&#25588;</div></div>
-    <div class="outcome"><div class="outcome-val" data-i18n data-zh="&#20840;&#26032;" data-en="New">&#20840;&#26032;</div><div class="outcome-label" data-i18n data-zh="&#22312;&#22320;&#21270;&#25554;&#30059;<br>&#22294;&#31034;&#31995;&#32113;" data-en="Localized Illustration<br>&amp; Icon System">&#22312;&#22320;&#21270;&#25554;&#30059;<br>&#22294;&#31034;&#31995;&#32113;</div></div>
-    <div class="outcome"><div class="outcome-val">&#x2713;</div><div class="outcome-label" data-i18n data-zh="&#23458;&#25142;&#25552;&#22577;<br>&#19968;&#27425;&#36890;&#36942;" data-en="Client Presentation<br>Approved First Round">&#23458;&#25142;&#25552;&#22577;<br>&#19968;&#27425;&#36890;&#36942;</div></div>
+    <div class="outcome">
+      <div class="outcome-val">100%</div>
+      <div class="outcome-label" data-i18n data-zh="中文排版問題<br>全面修復" data-en="Chinese Typography<br>Issues Resolved">中文排版問題<br>全面修復</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val">2</div>
+      <div class="outcome-label" data-i18n data-zh="Light / Dark<br>完整主題支援" data-en="Complete Themes<br>Light & Dark Mode">Light / Dark<br>完整主題支援</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val" data-i18n data-zh="全新" data-en="New">全新</div>
+      <div class="outcome-label" data-i18n data-zh="在地化插畫<br>圖示系統" data-en="Localized Illustration<br>& Icon System">在地化插畫<br>圖示系統</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val">✓</div>
+      <div class="outcome-label" data-i18n data-zh="客戶提報<br>一次通過" data-en="Client Presentation<br>Approved First Round">客戶提報<br>一次通過</div>
+    </div>
   </div>
 </div>
 
+<!-- ══ BUSINESS IMPACT ══ -->
+<div class="impact-divider reveal">
+  <div class="impact-divider-inner">
+    <div class="label">Business Impact</div>
+    <h2 data-i18n data-zh="設計帶來的業務影響" data-en="The Business Impact of This Design">設計帶來的業務影響</h2>
+    <div class="impact-row">
+      <div class="impact-card design-card">
+        <div class="impact-card-icon">🎨</div>
+        <div class="impact-card-content">
+          <h4 data-i18n data-zh="設計交付成果" data-en="Design Deliverables">設計交付成果</h4>
+          <div class="impact-items">
+            <div class="impact-item">
+              <div class="impact-num">86%</div>
+              <div class="impact-desc" data-i18n data-zh="客戶對安聯i探索的操作滿意度，與同業相比屬極高水準" data-en="Client satisfaction rate vs. comparable industry tools">客戶對安聯i探索的操作滿意度，與同業相比屬極高水準</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num">2</div>
+              <div class="impact-desc" data-i18n data-zh="完整雙主題支援（Light / Dark Mode），適應各種展業環境" data-en="Full dual-theme support for all presentation environments">完整雙主題支援（Light / Dark Mode），適應各種展業環境</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num">✓</div>
+              <div class="impact-desc" data-i18n data-zh="客戶提報一次通過，Prototype 展示有效建立信任" data-en="Client sign-off in first presentation round via prototype demo">客戶提報一次通過，Prototype 展示有效建立信任</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-card business-card">
+        <div class="impact-card-icon">📈</div>
+        <div class="impact-card-content">
+          <h4 data-i18n data-zh="工具上線後的業務影響" data-en="Business Impact Post-Launch">工具上線後的業務影響</h4>
+          <div class="impact-items">
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">40%</div>
+              <div class="impact-desc" data-i18n data-zh="導入兩年後，整體業務員銷售產能平均成長幅度" data-en="Average agent productivity growth within 2 years of rollout">導入兩年後，整體業務員銷售產能平均成長幅度</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">#1</div>
+              <div class="impact-desc" data-i18n data-zh="台灣業界首創，完整數位化保險銷售流程" data-en="First in Taiwan to fully digitize the end-to-end insurance sales process">台灣業界首創，完整數位化保險銷售流程</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">2018</div>
+              <div class="impact-desc" data-i18n data-zh="安聯i探索獲得 FinTech 金融科技發明專利認證" data-en="Allianz Discover awarded FinTech invention patent">安聯i探索獲得 FinTech 金融科技發明專利認證</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="impact-note" data-i18n
+      data-zh="業務產能成長 40% 為安聯人壽官方公開數據，摘自 <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 年安聯人壽數位轉型深度報導</a>（安聯人壽營運長陳俊宏受訪）。設計成果為本人直接參與之工作成果。"
+      data-en="The 40% productivity growth is publicly disclosed by Allianz Life Insurance, sourced from <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome's 2018 in-depth digital transformation feature</a> (interview with COO). Design outcomes reflect direct personal contributions.">
+      業務產能成長 40% 為安聯人壽官方公開數據，摘自 <a href="https://www.ithome.com.tw/people/124830" target="_blank">iThome 2018 年安聯人壽數位轉型深度報導</a>（安聯人壽營運長陳俊宏受訪）。設計成果為本人直接參與之工作成果。
+    </p>
+  </div>
+</div>
+
+<!-- ══ QUOTE ══ -->
 <div class="quote-section reveal">
   <div class="quote-inner">
     <div class="quote-mark">"</div>
-    <blockquote data-i18n data-zh="&#36889;&#20491;&#23560;&#26696;&#35731;&#25105;&#28145;&#21051;&#39636;&#26371;&#21040;&#65292;&#22909;&#30340;&#35373;&#35336;&#19981;&#19968;&#23450;&#26159;&#25512;&#32763;&#37325;&#20358;&#12290;&#22312;&#20102;&#35299;&#29992;&#25142;&#32676;&#39636;&#30340;&#29305;&#24615;&#24460;&#65292;&#36984;&#25799;&#12300;&#28472;&#36914;&#24335;&#20778;&#21270;&#12301;&#21453;&#32780;&#38656;&#35201;&#26356;&#32048;&#33193;&#30340;&#21028;&#26039;&#21147;&#8212;&#8212;&#22312;&#21738;&#20123;&#22320;&#26041;&#22533;&#25345;&#25913;&#35722;&#65292;&#22312;&#21738;&#20123;&#22320;&#26041;&#36984;&#25799;&#20811;&#21046;&#12290;&#26368;&#32066;&#33021;&#36879;&#36942; Prototype &#23637;&#31034;&#35498;&#26381;&#23433;&#32879;&#22296;&#38538;&#25509;&#21463;&#20778;&#21270;&#26041;&#26696;&#65292;&#20006;&#36880;&#28472;&#24314;&#31435;&#20449;&#20219;&#12289;&#35731;&#20182;&#20497;&#21916;&#27489;&#19978;&#35519;&#25972;&#24460;&#30340;&#20171;&#38754;&#65292;&#26159;&#25972;&#20491;&#23560;&#26696;&#26368;&#26377;&#25104;&#23601;&#24863;&#30340;&#26178;&#21051;&#12290;" data-en="This project taught me that great design isn't always about starting from scratch. After understanding the user base, choosing incremental refinement actually requires sharper judgment &mdash; knowing where to push for change and where to exercise restraint. The most rewarding moment was seeing the Allianz team gradually embrace our optimized interface through prototype demonstrations, building trust one iteration at a time.">&#36889;&#20491;&#23560;&#26696;&#35731;&#25105;&#28145;&#21051;&#39636;&#26371;&#21040;&#65292;&#22909;&#30340;&#35373;&#35336;&#19981;&#19968;&#23450;&#26159;&#25512;&#32763;&#37325;&#20358;&#12290;&#22312;&#20102;&#35299;&#29992;&#25142;&#32676;&#39636;&#30340;&#29305;&#24615;&#24460;&#65292;&#36984;&#25799;&#12300;&#28472;&#36914;&#24335;&#20778;&#21270;&#12301;&#21453;&#32780;&#38656;&#35201;&#26356;&#32048;&#33193;&#30340;&#21028;&#26039;&#21147;&#8212;&#8212;&#22312;&#21738;&#20123;&#22320;&#26041;&#22533;&#25345;&#25913;&#35722;&#65292;&#22312;&#21738;&#20123;&#22320;&#26041;&#36984;&#25799;&#20811;&#21046;&#12290;&#26368;&#32066;&#33021;&#36879;&#36942; Prototype &#23637;&#31034;&#35498;&#26381;&#23433;&#32879;&#22296;&#38538;&#25509;&#21463;&#20778;&#21270;&#26041;&#26696;&#65292;&#20006;&#36880;&#28472;&#24314;&#31435;&#20449;&#20219;&#12289;&#35731;&#20182;&#20497;&#21916;&#27489;&#19978;&#35519;&#25972;&#24460;&#30340;&#20171;&#38754;&#65292;&#26159;&#25972;&#20491;&#23560;&#26696;&#26368;&#26377;&#25104;&#23601;&#24863;&#30340;&#26178;&#21051;&#12290;</blockquote>
-    <div class="quote-author">&mdash; Hugo Ke, UI/UX Designer</div>
+    <blockquote data-i18n
+      data-zh="這個專案讓我深刻體會到，好的設計不一定是推翻重來。在了解用戶群體的特性後，選擇「漸進式優化」反而需要更細膩的判斷力——在哪些地方堅持改變，在哪些地方選擇克制。最終能透過 Prototype 展示說服安聯團隊接受優化方案，並逐漸建立信任、讓他們喜歡上調整後的介面，是整個專案最有成就感的時刻。"
+      data-en="This project taught me that great design isn't always about starting from scratch. After understanding the user base, choosing incremental refinement actually requires sharper judgment — knowing where to push for change and where to exercise restraint. The most rewarding moment was seeing the Allianz team gradually embrace our optimized interface through prototype demonstrations, building trust one iteration at a time.">
+      這個專案讓我深刻體會到，好的設計不一定是推翻重來。在了解用戶群體的特性後，選擇「漸進式優化」反而需要更細膩的判斷力——在哪些地方堅持改變，在哪些地方選擇克制。最終能透過 Prototype 展示說服安聯團隊接受優化方案，並逐漸建立信任、讓他們喜歡上調整後的介面，是整個專案最有成就感的時刻。
+    </blockquote>
+    <div class="quote-author">— Hugo Ke, UI/UX Designer</div>
   </div>
 </div>
 
+<!-- ══ CTA ══ -->
 <div class="cta reveal">
-  <h2 data-i18n data-zh="&#24819;&#20102;&#35299;&#26356;&#22810;&#65311;" data-en="Want to Know More?">&#24819;&#20102;&#35299;&#26356;&#22810;&#65311;</h2>
-  <p class="prose" style="text-align:center;margin:0 auto 2rem" data-i18n data-zh="&#23565;&#35373;&#35336;&#32048;&#31680;&#25110;&#21512;&#20316;&#26377;&#33288;&#36259;&#65311;&#27489;&#36814;&#38568;&#26178;&#33287;&#25105;&#32842;&#32842;&#12290;" data-en="Interested in the design details or a potential collaboration? Let's chat.">&#23565;&#35373;&#35336;&#32048;&#31680;&#25110;&#21512;&#20316;&#26377;&#33288;&#36259;&#65311;&#27489;&#36814;&#38568;&#26178;&#33287;&#25105;&#32842;&#32842;&#12290;</p>
-  <a href="https://www.hugoke.club/#contact" class="btn" data-i18n data-zh="&#32879;&#32097; Hugo &#8594;" data-en="Get in Touch &#8594;">&#32879;&#32097; Hugo &#8594;</a>
+  <h2 data-i18n data-zh="想了解更多？" data-en="Want to Know More?">想了解更多？</h2>
+  <p class="prose" style="text-align:center;margin:0 auto 2rem" data-i18n
+    data-zh="對設計細節或合作有興趣？歡迎隨時與我聊聊。"
+    data-en="Interested in the design details or a potential collaboration? Let's chat.">
+    對設計細節或合作有興趣？歡迎隨時與我聊聊。
+  </p>
+  <a href="https://www.hugoke.club/#contact" class="btn" data-i18n data-zh="聯絡 Hugo →" data-en="Get in Touch →">聯絡 Hugo →</a>
 </div>
 
 <div class="next-project">
   <span>Next Project</span>
-  <a href="https://www.hugoke.club" data-i18n data-zh="&#8592; &#22238;&#21040;&#20316;&#21697;&#21015;&#34920;" data-en="&#8592; Back to Portfolio">&#8592; &#22238;&#21040;&#20316;&#21697;&#21015;&#34920;</a>
+  <a href="https://www.hugoke.club" data-i18n data-zh="← 回到作品列表" data-en="← Back to Portfolio">← 回到作品列表</a>
 </div>
 
-<footer>&copy; 2026 Hugo Ke &mdash; HugoDesign. All rights reserved.</footer>
+<footer>© 2026 Hugo Ke — HugoDesign. All rights reserved.</footer>
 
 <script>
 var currentLang = 'zh';
@@ -410,21 +831,17 @@ var currentLang = 'zh';
 function switchLang(lang) {
   if (lang === currentLang) return;
   currentLang = lang;
-
   document.body.classList.add('lang-switching');
   document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
-
   if (lang === 'en') {
     document.body.classList.add('lang-en');
   } else {
     document.body.classList.remove('lang-en');
   }
-
   var btns = document.querySelectorAll('.lang-btn');
   btns.forEach(function(b) {
     b.classList.toggle('active', b.getAttribute('data-lang') === lang);
   });
-
   setTimeout(function() {
     var els = document.querySelectorAll('[data-i18n]');
     els.forEach(function(el) {
