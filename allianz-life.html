@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study — Allianz Discover | Hugo Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-heading-zh: 'Noto Sans TC', sans-serif;
+    --font-heading-en: 'Outfit', sans-serif;
+    --font-body-zh: 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+    --font-body-en: 'Outfit', 'Noto Sans TC', sans-serif;
+    --allianz-deep: #193B98;
+    --allianz-mid: #4F78CF;
+    --allianz-soft: #D9E8F8;
+    --allianz-mist: #E7EFF6;
+    --allianz-pale: #C6D1E1;
+    --ink: #141928;
+    --chalk: #f9fafb;
+    --warm-white: #fefdfb;
+    --stone: #e4e4e0;
+    --slate: #5e6270;
+    --mist-text: #8b8fa0;
+    --surface: #ffffff;
+    --radius: 14px;
+    --max-w: 1080px;
+    --content-w: 680px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body-zh);
+    background: var(--chalk);
+    color: var(--ink);
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  body.lang-en { font-family: var(--font-body-en); }
+  body.lang-en h1, body.lang-en h2, body.lang-en h3,
+  body.lang-en .ch-num, body.lang-en .stat-big, body.lang-en .outcome-val,
+  body.lang-en .decision-box h3, body.lang-en .concept-text h3 {
+    font-family: var(--font-heading-en);
+  }
+
+  /* ══ NAV ══ */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(249,250,251,0.82); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid rgba(0,0,0,0.05); height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 clamp(1.5rem,4vw,3rem); opacity:0; animation:fadeDown .5s ease .2s forwards; }
+  .nav-logo { font-family:'Outfit',sans-serif; font-weight:700; font-size:1rem; letter-spacing:-0.03em; color:var(--ink); }
+  .nav-logo span { color:var(--allianz-mid); }
+  .nav-right { display:flex; align-items:center; gap:1.6rem; }
+  .nav-links { display:flex; gap:1.6rem; }
+  .nav-links a { font-size:0.8rem; font-weight:500; color:var(--slate); text-decoration:none; transition:color .3s; }
+  .nav-links a:hover { color:var(--ink); }
+
+  .lang-toggle { display:flex; background:var(--stone); border-radius:100px; padding:2px; cursor:pointer; user-select:none; }
+  .lang-btn { padding:0.3rem 0.7rem; border-radius:100px; font-size:0.72rem; font-weight:600; color:var(--slate); transition:all .25s ease; line-height:1.2; }
+  .lang-btn.active { background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+
+  /* ══ HERO ══ */
+  .hero { position:relative; min-height:100vh; display:flex; align-items:flex-end; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; background:linear-gradient(180deg,rgba(25,59,152,0.03) 0%,rgba(25,59,152,0.08) 100%); z-index:0; }
+  .hero-img { position:absolute; inset:0; z-index:1; }
+  .hero-img img { width:100%; height:100%; object-fit:cover; object-position:center 30%; }
+  .hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,25,40,0) 0%,rgba(20,25,40,0.15) 40%,rgba(20,25,40,0.75) 80%,rgba(20,25,40,0.92) 100%); z-index:2; }
+  .hero-content { position:relative; z-index:3; padding:0 clamp(1.5rem,5vw,4rem) clamp(3rem,6vw,5rem); max-width:var(--max-w); margin:0 auto; width:100%; opacity:0; animation:fadeUp .9s ease .6s forwards; }
+  .hero-badge { display:inline-flex; align-items:center; gap:.5rem; background:rgba(255,255,255,0.12); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:.4rem 1rem; font-size:0.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,0.85); margin-bottom:1.5rem; }
+  .hero h1 { font-family:var(--font-heading-zh); font-weight:900; font-size:clamp(2.6rem,6vw,4.2rem); line-height:1.15; color:#fff; margin-bottom:1rem; max-width:620px; }
+  body.lang-en .hero h1 { font-family:var(--font-heading-en); }
+  .hero h1 em { font-style:italic; color:var(--allianz-soft); font-weight:400; }
+  .hero-desc { font-size:1rem; color:rgba(255,255,255,0.6); max-width:500px; line-height:1.8; margin-bottom:2.5rem; }
+  .hero-meta-row { display:flex; flex-wrap:wrap; gap:2.5rem; padding-top:1.8rem; border-top:1px solid rgba(255,255,255,0.12); }
+  .hero-meta-item dt { font-size:0.65rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:.25rem; }
+  .hero-meta-item dd { font-size:0.9rem; font-weight:500; color:rgba(255,255,255,0.85); }
+
+  /* ══ SECTIONS ══ */
+  .section { padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); max-width:var(--max-w); margin:0 auto; }
+  .label { font-size:0.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--allianz-mid); margin-bottom:.8rem; display:flex; align-items:center; gap:.5rem; }
+  .label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--allianz-mid); }
+  .section h2 { font-family:var(--font-heading-zh); font-weight:900; font-size:clamp(1.8rem,3.5vw,2.6rem); line-height:1.25; margin-bottom:1.2rem; color:var(--ink); }
+  body.lang-en .section h2 { font-family:var(--font-heading-en); }
+  .section p,.prose { font-size:0.95rem; color:var(--slate); line-height:1.95; margin-bottom:1rem; max-width:var(--content-w); }
+  .prose strong { color:var(--ink); font-weight:600; }
+  .nda { display:inline-flex; align-items:center; gap:.45rem; background:#fff8ee; border:1px solid #fce8c3; border-radius:100px; padding:.45rem 1.1rem; font-size:0.75rem; font-weight:500; color:#b36b00; margin-bottom:1.8rem; }
+
+  /* ══ DARK BAND ══ */
+  .band-dark { background:var(--ink); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); }
+  .band-dark-inner { max-width:var(--max-w); margin:0 auto; }
+  .band-dark .label { color:#d4a853; }
+  .band-dark .label::before { background:#d4a853; }
+  .band-dark h2 { color:#fff; }
+  .band-dark p { color:rgba(255,255,255,0.55); }
+  .challenge-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.2rem; margin-top:2rem; }
+  .ch-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:var(--radius); padding:1.8rem; transition:transform .35s ease,background .35s; }
+  .ch-card:hover { transform:translateY(-5px); background:rgba(255,255,255,0.08); }
+  .ch-num { font-family:var(--font-heading-zh); font-size:2.2rem; font-weight:900; color:#d4a853; opacity:.5; margin-bottom:.6rem; }
+  .ch-card h3 { font-size:1rem; font-weight:700; color:#fff; margin-bottom:.5rem; }
+  .ch-card p { font-size:0.85rem; color:rgba(255,255,255,0.45); line-height:1.75; max-width:100%; }
+
+  /* ══ CONCEPT ══ */
+  .concept-card { background:var(--surface); border:1px solid var(--stone); border-radius:var(--radius); overflow:hidden; margin-bottom:1.2rem; display:grid; grid-template-columns:1fr 1fr; transition:box-shadow .3s; }
+  .concept-card:hover { box-shadow:0 16px 48px rgba(0,0,0,0.06); }
+  .concept-card.reverse { direction:rtl; }
+  .concept-card.reverse>* { direction:ltr; }
+  .concept-img { overflow:hidden; min-height:280px; }
+  .concept-img img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+  .concept-card:hover .concept-img img { transform:scale(1.04); }
+  .concept-text { padding:clamp(1.5rem,3vw,2.5rem); display:flex; flex-direction:column; justify-content:center; }
+  .concept-text h3 { font-family:var(--font-heading-zh); font-size:1.35rem; font-weight:800; color:var(--ink); margin-bottom:.8rem; line-height:1.35; }
+  body.lang-en .concept-text h3 { font-family:var(--font-heading-en); }
+  .concept-text p { font-size:0.88rem; color:var(--slate); line-height:1.85; max-width:100%; }
+
+  /* ══ ROLES ══ */
+  .role-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1.2rem; margin-top:2rem; }
+  .role-card { background:var(--surface); border:1px solid var(--stone); border-radius:var(--radius); padding:1.8rem; position:relative; overflow:hidden; transition:transform .3s,box-shadow .3s; }
+  .role-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(0,0,0,0.05); }
+  .role-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--allianz-deep),var(--allianz-mid)); opacity:0; transition:opacity .3s; }
+  .role-card:hover::after { opacity:1; }
+  .role-icon { width:44px; height:44px; border-radius:10px; background:var(--allianz-mist); display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:1rem; }
+  .role-card h3 { font-size:0.95rem; font-weight:700; color:var(--ink); margin-bottom:.4rem; }
+  .role-card p { font-size:0.82rem; color:var(--slate); line-height:1.7; max-width:100%; }
+
+  /* ══ TIMELINE ══ */
+  .timeline { display:flex; gap:0; margin:2.5rem 0; position:relative; overflow-x:auto; padding-bottom:1rem; }
+  .timeline::before { content:''; position:absolute; top:28px; left:28px; right:28px; height:2px; background:var(--stone); z-index:0; }
+  .tl-step { flex:1; min-width:140px; text-align:center; position:relative; z-index:1; padding:0 .6rem; }
+  .tl-dot { width:14px; height:14px; border-radius:50%; background:var(--allianz-mid); border:3px solid var(--chalk); margin:22px auto 1rem; box-shadow:0 0 0 2px var(--allianz-mid); }
+  .tl-step h4 { font-size:0.82rem; font-weight:700; color:var(--ink); margin-bottom:.3rem; }
+  .tl-step p { font-size:0.72rem; color:var(--mist-text); line-height:1.55; max-width:100%; }
+
+  /* ══ DECISION ══ */
+  .decision-box { background:var(--allianz-mist); border-radius:var(--radius); padding:clamp(2rem,4vw,3rem); margin:2rem 0; border-left:4px solid var(--allianz-deep); }
+  .decision-box h3 { font-family:var(--font-heading-zh); font-size:1.25rem; font-weight:800; color:var(--allianz-deep); margin-bottom:.8rem; }
+  body.lang-en .decision-box h3 { font-family:var(--font-heading-en); }
+  .decision-box p { font-size:0.9rem; color:var(--slate); line-height:1.9; max-width:100%; }
+  .ba-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin:2rem 0; }
+  .ba-card { background:var(--surface); border:1px solid var(--stone); border-radius:var(--radius); padding:1.8rem; }
+  .ba-card.before { border-top:3px solid #d44; }
+  .ba-card.after { border-top:3px solid #2a9d5c; }
+  .ba-tag { font-size:0.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; margin-bottom:1rem; }
+  .ba-card.before .ba-tag { color:#d44; }
+  .ba-card.after .ba-tag { color:#2a9d5c; }
+  .ba-card ul { list-style:none; }
+  .ba-card li { font-size:0.85rem; color:var(--slate); line-height:1.85; padding:.25rem 0 .25rem 1.3rem; position:relative; }
+  .ba-card.before li::before { content:'\2717'; position:absolute; left:0; color:#d44; font-weight:700; font-size:0.8rem; }
+  .ba-card.after li::before { content:'\2713'; position:absolute; left:0; color:#2a9d5c; font-weight:700; font-size:0.8rem; }
+
+  /* ══ SHOWCASE ══ */
+  .showcase-band { background:linear-gradient(180deg,var(--allianz-mist) 0%,var(--chalk) 100%); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); }
+  .showcase-inner { max-width:var(--max-w); margin:0 auto; }
+  .img-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; margin-top:2rem; }
+  .img-cell { border-radius:var(--radius); overflow:hidden; background:var(--surface); border:1px solid var(--stone); transition:transform .4s ease,box-shadow .4s; }
+  .img-cell:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(0,0,0,0.08); }
+  .img-cell img { width:100%; display:block; transition:transform .5s ease; }
+  .img-cell:hover img { transform:scale(1.03); }
+  .img-cell .img-caption { padding:1rem 1.2rem; font-size:0.8rem; font-weight:500; color:var(--slate); }
+  .img-cell--wide { grid-column:1/-1; }
+
+  /* ══ SPECS ══ */
+  .specs-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2rem; }
+  .spec-group h4 { font-size:0.7rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--mist-text); margin-bottom:1rem; }
+  .color-swatches { display:flex; gap:.6rem; flex-wrap:wrap; }
+  .swatch { width:48px; height:48px; border-radius:10px; border:1px solid rgba(0,0,0,0.06); transition:transform .2s; cursor:default; }
+  .swatch:hover { transform:scale(1.12); }
+  .swatch-label { font-size:0.6rem; color:var(--mist-text); text-align:center; margin-top:.3rem; font-weight:500; }
+  .font-preview { font-size:1.8rem; font-weight:700; color:var(--ink); margin-bottom:.3rem; line-height:1.2; }
+  .font-name { font-size:0.78rem; color:var(--mist-text); }
+  .tool-icons { display:flex; gap:1rem; flex-wrap:wrap; }
+  .tool-icon { width:44px; height:44px; border-radius:10px; background:var(--surface); border:1px solid var(--stone); display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:var(--slate); transition:transform .2s; }
+  .tool-icon:hover { transform:scale(1.1); }
+
+  /* ══ STAT ══ */
+  .stat-hero { text-align:center; padding:clamp(60px,8vw,100px) 2rem; background:var(--allianz-deep); position:relative; overflow:hidden; }
+  .stat-hero::before { content:''; position:absolute; top:-50%; left:-20%; width:140%; height:200%; background:radial-gradient(circle at 30% 50%,rgba(79,120,207,0.3) 0%,transparent 60%); }
+  .stat-hero-inner { position:relative; z-index:1; max-width:var(--max-w); margin:0 auto; }
+  .stat-big { font-family:var(--font-heading-en); font-size:clamp(4rem,10vw,7rem); font-weight:900; color:#fff; line-height:1; margin-bottom:.5rem; }
+  .stat-big span { color:var(--allianz-soft); }
+  .stat-desc { font-size:1.1rem; color:rgba(255,255,255,0.6); max-width:480px; margin:0 auto; line-height:1.8; }
+
+  /* ══ OUTCOMES ══ */
+  .outcomes-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.2rem; margin-top:2rem; }
+  .outcome { text-align:center; background:var(--surface); border:1px solid var(--stone); border-radius:var(--radius); padding:2rem 1.2rem; transition:transform .3s; }
+  .outcome:hover { transform:translateY(-3px); }
+  .outcome-val { font-family:var(--font-heading-en); font-size:2.2rem; font-weight:900; color:var(--allianz-deep); margin-bottom:.3rem; }
+  .outcome-label { font-size:0.78rem; color:var(--mist-text); line-height:1.5; }
+
+  /* ══ MARKET CONTEXT ══ */
+  .market-band { background:linear-gradient(135deg, var(--allianz-deep) 0%, #1a4db8 50%, #2d5fc4 100%); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); position:relative; overflow:hidden; }
+  .market-band::before { content:''; position:absolute; top:-30%; right:-10%; width:60%; height:160%; background:radial-gradient(circle, rgba(79,120,207,0.25) 0%, transparent 70%); pointer-events:none; }
+  .market-band::after { content:''; position:absolute; bottom:-20%; left:-5%; width:40%; height:100%; background:radial-gradient(circle, rgba(217,232,248,0.08) 0%, transparent 60%); pointer-events:none; }
+  .market-band-inner { max-width:var(--max-w); margin:0 auto; position:relative; z-index:1; }
+  .market-band .label { color:rgba(217,232,248,0.7); }
+  .market-band .label::before { background:rgba(217,232,248,0.7); }
+  .market-band h2 { color:#fff; margin-bottom:.6rem; }
+  .market-band-inner > .market-desc { color:rgba(255,255,255,0.55); font-size:0.9rem; max-width:560px; margin-bottom:2.5rem; line-height:1.9; }
+  .market-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2.5rem; }
+  .mstat { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius); padding:2rem 1.5rem; transition:transform .3s, background .3s; }
+  .mstat:hover { transform:translateY(-4px); background:rgba(255,255,255,0.1); }
+  .mstat-val { font-family:var(--font-heading-en); font-size:clamp(2.2rem,4vw,3rem); font-weight:900; color:#fff; line-height:1; margin-bottom:.5rem; }
+  .mstat-val sup { font-size:0.55em; vertical-align:super; color:var(--allianz-soft); }
+  .mstat-label { font-size:0.82rem; color:rgba(255,255,255,0.65); line-height:1.6; }
+  .mstat-tag { display:inline-block; font-size:0.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; background:rgba(217,232,248,0.15); color:rgba(217,232,248,0.8); border-radius:100px; padding:.25rem .7rem; margin-bottom:.8rem; }
+  .market-timeline { margin-top:3rem; padding-top:2.5rem; border-top:1px solid rgba(255,255,255,0.1); }
+  .market-timeline-label { font-size:0.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(217,232,248,0.5); margin-bottom:1.5rem; }
+  .mtl-row { display:flex; gap:0; position:relative; overflow-x:auto; padding-bottom:.5rem; }
+  .mtl-row::before { content:''; position:absolute; top:10px; left:10px; right:10px; height:1px; background:rgba(255,255,255,0.12); }
+  .mtl-item { flex:1; min-width:130px; padding:0 .8rem; position:relative; }
+  .mtl-dot { width:8px; height:8px; border-radius:50%; background:var(--allianz-soft); margin:6px auto 1rem; position:relative; z-index:1; }
+  .mtl-item.highlight .mtl-dot { width:12px; height:12px; background:#fff; box-shadow:0 0 0 3px rgba(217,232,248,0.4); margin:4px auto 1rem; }
+  .mtl-year { font-family:var(--font-heading-en); font-size:0.8rem; font-weight:700; color:rgba(255,255,255,0.45); margin-bottom:.3rem; text-align:center; }
+  .mtl-item.highlight .mtl-year { color:#fff; }
+  .mtl-desc { font-size:0.7rem; color:rgba(255,255,255,0.4); line-height:1.5; text-align:center; }
+  .mtl-item.highlight .mtl-desc { color:rgba(217,232,248,0.8); }
+  .market-source { margin-top:2rem; font-size:0.68rem; color:rgba(255,255,255,0.25); }
+  .market-source a { color:rgba(255,255,255,0.35); text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.15); transition:color .2s; }
+  .market-source a:hover { color:rgba(255,255,255,0.6); }
+
+  /* ══ IMPACT ══ */
+  .impact-divider { background:var(--chalk); padding:clamp(50px,6vw,80px) clamp(1.5rem,5vw,4rem); border-top:1px solid var(--stone); }
+  .impact-divider-inner { max-width:var(--max-w); margin:0 auto; }
+  .impact-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:2rem; }
+  .impact-card { border-radius:var(--radius); padding:2rem; display:flex; gap:1.5rem; align-items:flex-start; }
+  .impact-card.design-card { background:var(--allianz-mist); border:1px solid var(--allianz-pale); }
+  .impact-card.business-card { background:linear-gradient(135deg,#f0f7ee,#e8f5e4); border:1px solid #c8e6c0; }
+  .impact-card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+  .design-card .impact-card-icon { background:rgba(25,59,152,0.1); }
+  .business-card .impact-card-icon { background:rgba(42,157,92,0.12); }
+  .impact-card-content h4 { font-size:0.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1rem; }
+  .design-card .impact-card-content h4 { color:var(--allianz-deep); }
+  .business-card .impact-card-content h4 { color:#1e7e4a; }
+  .impact-items { display:flex; flex-direction:column; gap:.6rem; }
+  .impact-item { display:flex; align-items:center; gap:.8rem; }
+  .impact-num { font-family:var(--font-heading-en); font-size:1.6rem; font-weight:900; line-height:1; min-width:56px; }
+  .design-card .impact-num { color:var(--allianz-deep); }
+  .business-card .impact-num { color:#2a9d5c; }
+  .impact-desc { font-size:0.8rem; color:var(--slate); line-height:1.5; }
+  .impact-note { margin-top:1.5rem; font-size:0.7rem; color:var(--mist-text); line-height:1.6; padding-top:1rem; border-top:1px solid var(--stone); }
+  .impact-note a { color:var(--allianz-mid); text-decoration:none; }
+  .impact-note a:hover { text-decoration:underline; }
+
+  /* ══ QUOTE ══ */
+  .quote-section { background:var(--warm-white); border-top:1px solid var(--stone); border-bottom:1px solid var(--stone); padding:clamp(60px,8vw,100px) clamp(1.5rem,5vw,4rem); }
+  .quote-inner { max-width:var(--content-w); margin:0 auto; position:relative; }
+  .quote-mark { font-family:var(--font-heading-en); font-size:8rem; color:var(--allianz-mid); opacity:.1; position:absolute; top:-2.5rem; left:-1rem; line-height:1; }
+  .quote-inner blockquote { font-size:1.05rem; color:var(--ink); line-height:2.1; position:relative; z-index:1; font-weight:400; }
+  .quote-author { margin-top:1.2rem; font-size:0.82rem; color:var(--mist-text); font-weight:500; }
+
+  /* ══ CTA ══ */
+  .cta { text-align:center; padding:clamp(80px,10vw,120px) 2rem; max-width:var(--max-w); margin:0 auto; }
+  .cta h2 { font-family:var(--font-heading-zh); font-size:2rem; font-weight:900; margin-bottom:.8rem; }
+  body.lang-en .cta h2 { font-family:var(--font-heading-en); }
+  .cta p { margin:0 auto 2rem; text-align:center; }
+  .btn { display:inline-block; padding:.85rem 2.2rem; background:var(--allianz-deep); color:#fff; text-decoration:none; font-size:0.85rem; font-weight:600; border-radius:100px; transition:background .3s,transform .3s; }
+  .btn:hover { background:var(--allianz-mid); transform:translateY(-2px); }
+  .next-project { text-align:center; padding:2rem; border-top:1px solid var(--stone); }
+  .next-project span { font-size:0.68rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--mist-text); display:block; margin-bottom:.8rem; }
+  .next-project a { font-family:var(--font-heading-en); font-size:1.4rem; color:var(--ink); text-decoration:none; font-weight:700; transition:color .3s; }
+  .next-project a:hover { color:var(--allianz-mid); }
+  footer { text-align:center; padding:2rem; font-size:0.72rem; color:var(--mist-text); }
+
+  /* ══ ANIMATIONS ══ */
+  .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .reveal-delay-1 { transition-delay:.1s; }
+  .reveal-delay-2 { transition-delay:.2s; }
+  .reveal-delay-3 { transition-delay:.3s; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+  [data-i18n] { transition: opacity 0.25s ease; }
+  .lang-switching [data-i18n] { opacity: 0; }
+
+  @media(max-width:768px){
+    .concept-card{grid-template-columns:1fr} .concept-card.reverse{direction:ltr} .concept-img{min-height:200px}
+    .ba-row{grid-template-columns:1fr} .specs-row{grid-template-columns:1fr;gap:2rem}
+    .img-grid{grid-template-columns:1fr} .hero-meta-row{gap:1.5rem}
+    .timeline{flex-wrap:wrap} .timeline::before{display:none} .tl-step{min-width:45%}
+    .market-stats{grid-template-columns:1fr}
+    .impact-row{grid-template-columns:1fr}
+    .mtl-row{flex-wrap:wrap} .mtl-row::before{display:none} .mtl-item{min-width:45%}
+  }
+  @media(max-width:480px){ .tl-step{min-width:100%} .nav-links{gap:.8rem} .nav-right{gap:.8rem} .mtl-item{min-width:100%} }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">HUGO<span>Design</span></div>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="https://www.hugoke.club" data-i18n data-zh="首頁" data-en="Home">首頁</a>
+      <a href="https://www.behance.net/hugo_design" target="_blank">Behance</a>
+      <a href="https://www.hugoke.club/#contact" data-i18n data-zh="聯絡我" data-en="Contact">聯絡我</a>
+    </div>
+    <div class="lang-toggle" id="langToggle">
+      <div class="lang-btn active" data-lang="zh">中</div>
+      <div class="lang-btn" data-lang="en">EN</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-img"><img src="https://static.wixstatic.com/media/8b67a7_db34dc0433af4411a7640a96e639b856~mv2.jpg/v1/fill/w_1920,h_1080,al_c,q_85,enc_avif,quality_auto/img_app_title%402x_compression.jpg" alt="Allianz Discover"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Case Study</div>
+    <h1 data-i18n data-zh="安聯 <em>i</em> 探索<br>Allianz Discover" data-en="Allianz <em>Discover</em><br>Insurance Needs Explorer">安聯 <em>i</em> 探索<br>Allianz Discover</h1>
+    <p class="hero-desc" data-i18n
+      data-zh="為保險業務員打造的 iPad 數位銷售工具——從泰國版本到台灣市場的跨文化設計適配，一場關於「克制」與「在地化」的設計實戰。"
+      data-en="A digital sales tool for iPad designed for insurance agents — a cross-cultural design adaptation from Thailand to Taiwan, balancing restraint with localization.">
+      為保險業務員打造的 iPad 數位銷售工具——從泰國版本到台灣市場的跨文化設計適配，一場關於「克制」與「在地化」的設計實戰。
+    </p>
+    <dl class="hero-meta-row">
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="客戶" data-en="Client">客戶</dt>
+        <dd data-i18n data-zh="安聯人壽 Allianz" data-en="Allianz Life Insurance">安聯人壽 Allianz</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="角色" data-en="Role">角色</dt>
+        <dd>UI/UX Designer</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="時間" data-en="Duration">時間</dt>
+        <dd data-i18n data-zh="約 3–6 個月" data-en="3 – 6 months">約 3–6 個月</dd>
+      </div>
+      <div class="hero-meta-item">
+        <dt data-i18n data-zh="平台" data-en="Platform">平台</dt>
+        <dd>iPad App</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- ══ OVERVIEW ══ -->
+<div class="section reveal">
+  <div class="label">Overview</div>
+  <h2 data-i18n data-zh="專案概述" data-en="Project Overview">專案概述</h2>
+  <div class="nda" data-i18n
+    data-zh="✦ 本頁為概念設計呈現，完整設計歷程歡迎進一步了解"
+    data-en="✦ Visuals shown are concept designs based on hands-on project experience. Full design process available upon request.">
+    ✦ 本頁為概念設計呈現，完整設計歷程歡迎進一步了解
+  </div>
+  <p class="prose" data-i18n
+    data-zh="安聯人壽希望為旗下業務團隊打造一款 iPad 數位化銷售輔助工具。業務員在面對客戶時，能即時進行保險需求分析、方案搭配與費用試算，取代傳統的紙本 DM 與手動計算。"
+    data-en="Allianz Life Insurance needed a digital sales tool for their field agents on iPad. The tool enables agents to conduct real-time insurance needs analysis, plan comparisons, and premium calculations during client meetings — replacing traditional paper brochures and manual workflows.">
+    安聯人壽希望為旗下業務團隊打造一款 iPad 數位化銷售輔助工具。業務員在面對客戶時，能即時進行保險需求分析、方案搭配與費用試算，取代傳統的紙本 DM 與手動計算。
+  </p>
+  <p class="prose" data-i18n
+    data-zh="設計以<strong>「以客戶為中心」</strong>為出發點，透過高互動性的數位工具，運用不同年齡、職業、性別等故事情境，快速幫助客戶探索自己的保險需求。"
+    data-en="Designed with a <strong>client-centered approach</strong>, the tool uses interactive scenarios based on age, occupation, and gender to help customers quickly discover their insurance needs.">
+    設計以<strong>「以客戶為中心」</strong>為出發點，透過高互動性的數位工具，運用不同年齡、職業、性別等故事情境，快速幫助客戶探索自己的保險需求。
+  </p>
+  <p class="prose" data-i18n
+    data-zh="這款工具的前身由<strong>泰國團隊設計</strong>，需要針對台灣市場進行全面的在地化適配——不只是語言翻譯，更涉及視覺風格、排版邏輯、操作習慣與保險產品結構的重新設計。"
+    data-en="The original version was <strong>designed by a team in Thailand</strong> and required comprehensive localization for the Taiwanese market — far beyond simple translation, involving visual style, layout logic, interaction patterns, and product structure.">
+    這款工具的前身由<strong>泰國團隊設計</strong>，需要針對台灣市場進行全面的在地化適配——不只是語言翻譯，更涉及視覺風格、排版邏輯、操作習慣與保險產品結構的重新設計。
+  </p>
+</div>
+
+<!-- ══ MARKET CONTEXT ══ -->
+<div class="market-band reveal">
+  <div class="market-band-inner">
+    <div class="label">Market Context</div>
+    <h2 data-i18n data-zh="為何這個專案很重要" data-en="Why This Project Mattered">為何這個專案很重要</h2>
+    <p class="market-desc" data-i18n
+      data-zh="2016 年，台灣保險業的數位化浪潮正在崛起。安聯人壽決定成為業界第一家將保險銷售流程全面數位化的保險公司，這款 iPad 工具正是該策略的核心。"
+      data-en="In 2016, Taiwan's insurance industry was at a digital inflection point. Allianz chose to become the first insurer in Taiwan to fully digitize its sales process end-to-end — and this iPad tool was the centerpiece of that strategy.">
+      2016 年，台灣保險業的數位化浪潮正在崛起。安聯人壽決定成為業界第一家將保險銷售流程全面數位化的保險公司，這款 iPad 工具正是該策略的核心。
+    </p>
+
+    <div class="market-stats">
+      <div class="mstat reveal reveal-delay-1">
+        <div class="mstat-tag" data-i18n data-zh="台灣業界首創" data-en="Industry First">台灣業界首創</div>
+        <div class="mstat-val">#1</div>
+        <div class="mstat-label" data-i18n
+          data-zh="台灣第一家將保險銷售流程從頭到尾全面數位化的壽險公司"
+          data-en="First life insurer in Taiwan to fully digitize the end-to-end sales process">
+          台灣第一家將保險銷售流程從頭到尾全面數位化的壽險公司
+        </div>
+      </div>
+      <div class="mstat reveal reveal-delay-2">
+        <div class="mstat-tag" data-i18n data-zh="業務員產能" data-en="Agent Productivity">業務員產能</div>
+        <div class="mstat-val">40<sup>%</sup></div>
+        <div class="mstat-label" data-i18n
+          data-zh="導入數位工具兩年後，整體業務員銷售產能平均成長幅度"
+          data-en="Average increase in agent sales productivity within 2 years of full rollout">
+          導入數位工具兩年後，整體業務員銷售產能平均成長幅度
+        </div>
+      </div>
+      <div class="mstat reveal reveal-delay-3">
+        <div class="mstat-tag" data-i18n data-zh="工具覆蓋規模" data-en="Scale of Deployment">工具覆蓋規模</div>
+        <div class="mstat-val">5,000<sup>+</sup></div>
+        <div class="mstat-label" data-i18n
+          data-zh="安聯全台壽險顧問人數，為此工具的直接使用族群規模"
+          data-en="Allianz Life agents across Taiwan — the direct user base this design was built to serve">
+          安聯全台壽險顧問人數，為此工具的直接使用族群規模
+        </div>
+      </div>
+    </div>
+
+    <div class="market-timeline">
+      <div class="market-timeline-label" data-i18n data-zh="安聯數位工具演進時間軸" data-en="Allianz Digital Tools Evolution">安聯數位工具演進時間軸</div>
+      <div class="mtl-row">
+        <div class="mtl-item highlight">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2016</div>
+          <div class="mtl-desc" data-i18n data-zh="安聯i探索上線<br>本專案核心" data-en="Allianz Discover<br>This project">安聯i探索上線<br>本專案核心</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2017</div>
+          <div class="mtl-desc" data-i18n data-zh="安聯e服務<br>保戶App上線" data-en="e-Service App<br>launched">安聯e服務<br>保戶App上線</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2018</div>
+          <div class="mtl-desc" data-i18n data-zh="取得FinTech<br>發明專利" data-en="FinTech patent<br>awarded">取得FinTech<br>發明專利</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2018</div>
+          <div class="mtl-desc" data-i18n data-zh="Allie智能客服<br>上線" data-en="Allie AI service<br>launched">Allie智能客服<br>上線</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2020</div>
+          <div class="mtl-desc" data-i18n data-zh="數位生態系<br>七大區塊完整" data-en="Full digital<br>ecosystem live">數位生態系<br>七大區塊完整</div>
+        </div>
+        <div class="mtl-item">
+          <div class="mtl-dot"></div>
+          <div class="mtl-year">2025</div>
+          <div class="mtl-desc" data-i18n data-zh="Agency Digital Hub<br>創業基地模式" data-en="Digital Hub<br>agency model">Agency Digital Hub<br>創業基地模式</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="market-source" data-i18n
+      data-zh="數據來源：<a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 — 安聯人壽數位轉型策略深度報導</a>；<a href='https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html' target='_blank'>安聯人壽30週年官方頁面</a>"
+      data-en="Sources: <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 — Allianz Digital Transformation Report</a>; <a href='https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html' target='_blank'>Allianz Taiwan 30th Anniversary</a>">
+      數據來源：<a href="https://www.ithome.com.tw/people/124830" target="_blank">iThome 2018 — 安聯人壽數位轉型策略深度報導</a>；<a href="https://www.allianz.com.tw/zh_TW/about-us/company/30Years.html" target="_blank">安聯人壽30週年官方頁面</a>
+    </p>
+  </div>
+</div>
+
+<!-- ══ DESIGN CONCEPT ══ -->
+<div class="section reveal">
+  <div class="label">Design Concept</div>
+  <h2 data-i18n data-zh="設計核心理念" data-en="Core Design Philosophy">設計核心理念</h2>
+  <div class="concept-card" style="margin-top:1.5rem;">
+    <div class="concept-img"><img src="https://static.wixstatic.com/media/8b67a7_45e57d688e2d49c8926bae20fd49ae1e~mv2.png/v1/fill/w_800,h_900,al_c,q_90,enc_avif,quality_auto/8b67a7_45e57d688e2d49c8926bae20fd49ae1e~mv2.png" alt="Concept"></div>
+    <div class="concept-text">
+      <h3 data-i18n data-zh="與時俱進・即時呈現<br>保單數位化銷售最佳利器" data-en="Stay Current, Present Instantly<br>The Ultimate Digital Sales Tool">與時俱進・即時呈現<br>保單數位化銷售最佳利器</h3>
+      <p data-i18n
+        data-zh="利用數位工具將時事等資訊即時更新與整理，讓業務員透過整理後的數位內容，協助客戶更了解保險資訊，提供最適合的保險規劃方案、有效規避風險。"
+        data-en="Leveraging real-time data updates and curated content, the tool helps agents deliver timely insurance information to clients, enabling them to understand risks and find the right coverage plan.">
+        利用數位工具將時事等資訊即時更新與整理，讓業務員透過整理後的數位內容，協助客戶更了解保險資訊，提供最適合的保險規劃方案、有效規避風險。
+      </p>
+    </div>
+  </div>
+  <div class="concept-card reverse">
+    <div class="concept-img"><img src="https://static.wixstatic.com/media/8b67a7_b11dfd5cb7a94a44ae1047f79d66d454~mv2.png/v1/fill/w_800,h_560,al_c,q_90,enc_avif,quality_auto/8b67a7_b11dfd5cb7a94a44ae1047f79d66d454~mv2.png" alt="Illustrations"></div>
+    <div class="concept-text">
+      <h3 data-i18n data-zh="趣味與傳遞資訊兼容" data-en="Where Fun Meets Information">趣味與傳遞資訊兼容</h3>
+      <p data-i18n
+        data-zh="設計團隊繪製了大量插畫，以類似遊戲的友善操作介面，讓客戶以輕鬆、趣味十足的情境進行需求探索，迅速了解自己在保險上的需求。"
+        data-en="The design team created a rich library of custom illustrations, building a game-like, friendly interface that lets clients explore their insurance needs through engaging, lighthearted scenarios.">
+        設計團隊繪製了大量插畫，以類似遊戲的友善操作介面，讓客戶以輕鬆、趣味十足的情境進行需求探索，迅速了解自己在保險上的需求。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHALLENGES ══ -->
+<div class="band-dark reveal">
+  <div class="band-dark-inner">
+    <div class="label">Challenges</div>
+    <h2 data-i18n data-zh="設計挑戰" data-en="Design Challenges">設計挑戰</h2>
+    <p data-i18n
+      data-zh="這個專案的複雜度不在於單一功能，而是在多重限制條件下的平衡取捨。"
+      data-en="The complexity wasn't about any single feature — it was about balancing multiple constraints simultaneously.">
+      這個專案的複雜度不在於單一功能，而是在多重限制條件下的平衡取捨。
+    </p>
+    <div class="challenge-grid">
+      <div class="ch-card reveal reveal-delay-1">
+        <div class="ch-num">01</div>
+        <h3 data-i18n data-zh="跨文化設計適配" data-en="Cross-Cultural Adaptation">跨文化設計適配</h3>
+        <p data-i18n
+          data-zh="泰文轉換為中文後排版嚴重跑版。中文字元密度高、斷行規則不同，原本的版面結構需全面重新調整。"
+          data-en="Converting from Thai to Chinese caused severe layout issues. Chinese characters are denser with different line-breaking rules, requiring a complete restructure of the layout system.">
+          泰文轉換為中文後排版嚴重跑版。中文字元密度高、斷行規則不同，原本的版面結構需全面重新調整。
+        </p>
+      </div>
+      <div class="ch-card reveal reveal-delay-2">
+        <div class="ch-num">02</div>
+        <h3 data-i18n data-zh="用戶年齡層跨度大" data-en="Wide User Age Range">用戶年齡層跨度大</h3>
+        <p data-i18n
+          data-zh="安聯業務團隊年齡層差距大，年長業務員對介面改動的適應成本較高，改版幅度需謹慎拿捏。"
+          data-en="Allianz's agent team spans a wide age range. Senior agents have higher adaptation costs for interface changes, requiring careful calibration of the redesign scope.">
+          安聯業務團隊年齡層差距大，年長業務員對介面改動的適應成本較高，改版幅度需謹慎拿捏。
+        </p>
+      </div>
+      <div class="ch-card reveal reveal-delay-3">
+        <div class="ch-num">03</div>
+        <h3 data-i18n data-zh="視覺風格在地化" data-en="Visual Localization">視覺風格在地化</h3>
+        <p data-i18n
+          data-zh="原版插畫風格偏向泰國審美，需轉換為台灣用戶更容易接受、更討喜的視覺語彙。"
+          data-en="The original illustrations reflected Thai aesthetic preferences and needed to be transformed into a visual language that resonates with Taiwanese users.">
+          原版插畫風格偏向泰國審美，需轉換為台灣用戶更容易接受、更討喜的視覺語彙。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MY ROLE ══ -->
+<div class="section reveal">
+  <div class="label">My Role</div>
+  <h2 data-i18n data-zh="我的角色與職責" data-en="What I Did">我的角色與職責</h2>
+  <p class="prose" data-i18n
+    data-zh="涵蓋從需求理解到最終交付的完整設計鏈路，並親自前往安聯進行設計提報。"
+    data-en="My involvement spanned the full design pipeline — from requirements gathering to final client presentation at Allianz headquarters.">
+    涵蓋從需求理解到最終交付的完整設計鏈路，並親自前往安聯進行設計提報。
+  </p>
+  <div class="role-grid">
+    <div class="role-card">
+      <div class="role-icon">💬</div>
+      <h3 data-i18n data-zh="需求討論" data-en="Requirements Discovery">需求討論</h3>
+      <p data-i18n
+        data-zh="與 PM 及安聯業務端共同釐清核心使用情境、用戶痛點，以及泰國版本需改進的方向。"
+        data-en="Collaborated with PMs and Allianz's sales team to identify core use cases, user pain points, and areas for improvement from the Thai version.">
+        與 PM 及安聯業務端共同釐清核心使用情境、用戶痛點，以及泰國版本需改進的方向。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🎨</div>
+      <h3 data-i18n data-zh="UI 設計 & 插畫繪製" data-en="UI Design & Illustration">UI 設計 & 插畫繪製</h3>
+      <p data-i18n
+        data-zh="重新設計介面視覺風格，繪製符合台灣市場偏好的插畫元素，建立完整圖示系統。"
+        data-en="Redesigned the visual language and created a full set of localized illustrations including family scenarios, coverage categories, and iconography.">
+        重新設計介面視覺風格，繪製符合台灣市場偏好的插畫元素，建立完整圖示系統。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">⚡</div>
+      <h3 data-i18n data-zh="Prototype 製作" data-en="Interactive Prototyping">Prototype 製作</h3>
+      <p data-i18n
+        data-zh="建立可操作的互動原型，用於內部驗證與客戶提報，讓安聯團隊直接體驗優化後的操作流程。"
+        data-en="Built interactive prototypes for internal validation and client presentations, allowing the Allianz team to experience the optimized workflow firsthand.">
+        建立可操作的互動原型，用於內部驗證與客戶提報，讓安聯團隊直接體驗優化後的操作流程。
+      </p>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🎤</div>
+      <h3 data-i18n data-zh="客戶提報與溝通" data-en="Client Presentation">客戶提報與溝通</h3>
+      <p data-i18n
+        data-zh="親自前往安聯提報，說明設計決策理由，透過 Prototype 展示逐步獲得客戶認可與信任。"
+        data-en="Presented on-site at Allianz, explaining the rationale behind each design decision. Through prototype demos, gradually earned client trust and approval.">
+        親自前往安聯提報，說明設計決策理由，透過 Prototype 展示逐步獲得客戶認可與信任。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROCESS ══ -->
+<div class="section reveal">
+  <div class="label">Process</div>
+  <h2 data-i18n data-zh="設計流程" data-en="Design Process">設計流程</h2>
+  <div class="timeline">
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="需求分析" data-en="Research">需求分析</h4>
+      <p data-i18n data-zh="研究泰國版本<br>釐清在地化需求" data-en="Analyzed Thai version<br>Defined localization needs">研究泰國版本<br>釐清在地化需求</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4>Wireflow</h4>
+      <p data-i18n data-zh="重新規劃頁面流程<br>與資訊架構" data-en="Restructured page flows<br>& information architecture">重新規劃頁面流程<br>與資訊架構</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="UI & 插畫設計" data-en="UI & Illustration">UI & 插畫設計</h4>
+      <p data-i18n data-zh="設計視覺風格<br>繪製在地化插畫" data-en="Designed visual language<br>Created localized artwork">設計視覺風格<br>繪製在地化插畫</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4>Prototype</h4>
+      <p data-i18n data-zh="製作可互動原型<br>內部測試驗證" data-en="Built interactive prototype<br>Internal testing & validation">製作可互動原型<br>內部測試驗證</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <h4 data-i18n data-zh="客戶提報" data-en="Present & Iterate">客戶提報</h4>
+      <p data-i18n data-zh="安聯現場展示<br>根據回饋迭代" data-en="On-site client demo<br>Feedback-driven refinement">安聯現場展示<br>根據回饋迭代</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DESIGN DECISIONS ══ -->
+<div class="section reveal">
+  <div class="label">Design Decisions</div>
+  <h2 data-i18n data-zh="關鍵設計決策" data-en="Key Design Decisions">關鍵設計決策</h2>
+  <div class="decision-box">
+    <h3 data-i18n data-zh="漸進式優化 vs. 大幅改版" data-en="Incremental Refinement vs. Full Redesign">漸進式優化 vs. 大幅改版</h3>
+    <p data-i18n
+      data-zh="初期曾規劃大幅度介面改版，但考量安聯業務團隊年齡跨度大，年長業務員已習慣原本的按鈕位置與操作邏輯，貿然大改可能導致學習成本過高、影響工作效率。最終採取<strong>「框架不動、質感升級」</strong>的漸進策略——按鈕配置保留舊版框架，但在視覺風格、hover/click 互動回饋及整體一致性上全面提升。"
+      data-en="We initially planned a major redesign, but reconsidered after understanding that Allianz's agent team has a wide age range. Senior agents were already accustomed to existing button placements — a drastic overhaul risked high learning costs and reduced productivity. We ultimately adopted an <strong>&ldquo;upgrade the quality, preserve the framework&rdquo;</strong> strategy.">
+      初期曾規劃大幅度介面改版，但考量安聯業務團隊年齡跨度大，年長業務員已習慣原本的按鈕位置與操作邏輯，貿然大改可能導致學習成本過高、影響工作效率。最終採取<strong>「框架不動、質感升級」</strong>的漸進策略——按鈕配置保留舊版框架，但在視覺風格、hover/click 互動回饋及整體一致性上全面提升。
+    </p>
+  </div>
+  <div class="ba-row">
+    <div class="ba-card before">
+      <div class="ba-tag" data-i18n data-zh="優化前的問題" data-en="Before — Issues Identified">優化前的問題</div>
+      <ul>
+        <li data-i18n data-zh="泰文轉中文後排版跑版，文字溢出" data-en="Broken layouts after Thai-to-Chinese conversion, text overflow">泰文轉中文後排版跑版，文字溢出</li>
+        <li data-i18n data-zh="插畫風格偏向泰國審美，在地辨識度低" data-en="Illustration style reflected Thai aesthetics, low local relevance">插畫風格偏向泰國審美，在地辨識度低</li>
+        <li data-i18n data-zh="按鈕 hover、click 狀態不一致" data-en="Inconsistent hover and click states across buttons">按鈕 hover、click 狀態不一致</li>
+        <li data-i18n data-zh="中文語境下資訊編排不夠直覺" data-en="Information layout not optimized for Chinese reading patterns">中文語境下資訊編排不夠直覺</li>
+      </ul>
+    </div>
+    <div class="ba-card after">
+      <div class="ba-tag" data-i18n data-zh="優化後的改善" data-en="After — Improvements Made">優化後的改善</div>
+      <ul>
+        <li data-i18n data-zh="針對中文重新設計排版結構與斷行邏輯" data-en="Rebuilt typography system with proper Chinese line-breaking">針對中文重新設計排版結構與斷行邏輯</li>
+        <li data-i18n data-zh="插畫調整為台灣市場偏好的討喜風格" data-en="Illustrations redesigned to match Taiwanese visual preferences">插畫調整為台灣市場偏好的討喜風格</li>
+        <li data-i18n data-zh="統一所有互動狀態的視覺回饋" data-en="Unified interaction feedback across all interactive elements">統一所有互動狀態的視覺回饋</li>
+        <li data-i18n data-zh="保留按鈕配置框架，降低學習成本" data-en="Preserved button layout framework to minimize learning curve">保留按鈕配置框架，降低學習成本</li>
+      </ul>
+    </div>
+  </div>
+  <p class="prose" style="margin-top:1rem;" data-i18n
+    data-zh="因業務員常需以平板進行長時間說明與操作，色彩計畫也進行了調整與優化，盡可能避免長時間使用造成的視覺疲勞。同時設計了完整的 <strong>Light Mode 與 Dark Mode</strong> 雙主題，確保在任何光線環境下都有良好的閱讀體驗。"
+    data-en="Since agents frequently use the tablet for extended client presentations, we optimized the color palette to <strong>reduce visual fatigue during prolonged use</strong>, and designed complete <strong>Light Mode and Dark Mode</strong> themes for all lighting conditions.">
+    因業務員常需以平板進行長時間說明與操作，色彩計畫也進行了調整與優化，盡可能避免長時間使用造成的視覺疲勞。同時設計了完整的 <strong>Light Mode 與 Dark Mode</strong> 雙主題，確保在任何光線環境下都有良好的閱讀體驗。
+  </p>
+</div>
+
+<!-- ══ VISUAL DESIGN ══ -->
+<div class="showcase-band reveal">
+  <div class="showcase-inner">
+    <div class="label">Visual Design</div>
+    <h2 data-i18n data-zh="視覺設計成果" data-en="Design Showcase">視覺設計成果</h2>
+    <p class="prose" data-i18n
+      data-zh="以下為重新設計之概念版本，展示設計方向與視覺風格。"
+      data-en="Concept designs demonstrating the visual direction and design approach.">
+      以下為重新設計之概念版本，展示設計方向與視覺風格。
+    </p>
+    <div class="img-grid">
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png/v1/fill/w_900,h_600,al_c,q_90,enc_avif,quality_auto/8b67a7_ff8ae68ca06941d4a7c4801609e09245~mv2.png" alt="UI Design">
+        <div class="img-caption" data-i18n data-zh="以使用者體驗為優先的 UI 設計，符合企業形象並提升操作質感" data-en="User experience-first UI design, aligned with brand identity while elevating interaction quality">以使用者體驗為優先的 UI 設計，符合企業形象並提升操作質感</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png/v1/fill/w_900,h_470,al_c,q_90,enc_avif,quality_auto/8b67a7_d6bb4927e50247d79103fc050fb26d83~mv2.png" alt="Color System">
+        <div class="img-caption" data-i18n data-zh="色彩計畫優化，降低長時間使用的視覺疲勞" data-en="Optimized color palette designed to reduce visual fatigue during extended use">色彩計畫優化，降低長時間使用的視覺疲勞</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_b74e756387e246af927718f3944faa84~mv2.png/v1/fill/w_900,h_570,al_c,q_90,enc_avif,quality_auto/8b67a7_b74e756387e246af927718f3944faa84~mv2.png" alt="Illustrations">
+        <div class="img-caption" data-i18n data-zh="在地化插畫系統，以趣味情境引導客戶探索保險需求" data-en="Localized illustration system with engaging scenarios to guide needs exploration">在地化插畫系統，以趣味情境引導客戶探索保險需求</div>
+      </div>
+      <div class="img-cell">
+        <img src="https://static.wixstatic.com/media/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png/v1/fill/w_900,h_640,al_c,q_90,enc_avif,quality_auto/8b67a7_69742f44ee9549c095a3342ee3039784~mv2.png" alt="Seasonal Themes">
+        <div class="img-caption" data-i18n data-zh="登入頁面因應季節變化、節慶等主題插畫，豐富視覺呈現" data-en="Seasonal and festive themed login illustrations for a richer visual experience">登入頁面因應季節變化、節慶等主題插畫，豐富視覺呈現</div>
+      </div>
+      <div class="img-cell img-cell--wide">
+        <img src="https://static.wixstatic.com/media/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png/v1/fill/w_1200,h_770,al_c,q_90,enc_avif,quality_auto/8b67a7_8287d5167842485cb3426c06f15c180c~mv2.png" alt="Loading Animation">
+        <div class="img-caption" data-i18n data-zh="以 Logo 為主造型的微動畫設計，降低資料載入等待時的負面感受" data-en="Logo-based micro-animation designed to ease perceived wait time during data loading">以 Logo 為主造型的微動畫設計，降低資料載入等待時的負面感受</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DESIGN SYSTEM ══ -->
+<div class="section reveal">
+  <div class="label">Design System</div>
+  <h2 data-i18n data-zh="視覺規範" data-en="Visual Specifications">視覺規範</h2>
+  <div class="specs-row">
+    <div class="spec-group">
+      <h4>Colors</h4>
+      <div class="color-swatches">
+        <div><div class="swatch" style="background:#193B98"></div><div class="swatch-label">#193B98</div></div>
+        <div><div class="swatch" style="background:#4F78CF"></div><div class="swatch-label">#4F78CF</div></div>
+        <div><div class="swatch" style="background:#D9E8F8"></div><div class="swatch-label">#D9E8F8</div></div>
+        <div><div class="swatch" style="background:#E7EFF6"></div><div class="swatch-label">#E7EFF6</div></div>
+        <div><div class="swatch" style="background:#C6D1E1"></div><div class="swatch-label">#C6D1E1</div></div>
+      </div>
+    </div>
+    <div class="spec-group">
+      <h4>Typography</h4>
+      <div class="font-preview" style="font-family:'Noto Sans TC',sans-serif">Aa Allianz</div>
+      <div class="font-name">Noto Sans TC</div>
+      <div class="font-preview" style="font-family:'Outfit',sans-serif;margin-top:.8rem">Aa Discover</div>
+      <div class="font-name">Outfit</div>
+    </div>
+    <div class="spec-group">
+      <h4>Tools</h4>
+      <div class="tool-icons">
+        <div class="tool-icon">Sketch</div>
+        <div class="tool-icon">Ps</div>
+        <div class="tool-icon">Ai</div>
+        <div class="tool-icon">Ae</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STAT HERO ══ -->
+<div class="stat-hero reveal">
+  <div class="stat-hero-inner">
+    <div class="stat-big">86<span>%</span></div>
+    <p class="stat-desc" data-i18n
+      data-zh="根據調查，與其他保險業者相比，有 86% 的客戶對「安聯 i 探索」的操作體驗有極高的滿意度。"
+      data-en="Client satisfaction rate for Allianz Discover — significantly outperforming comparable insurance industry tools in user experience surveys.">
+      根據調查，與其他保險業者相比，有 86% 的客戶對「安聯 i 探索」的操作體驗有極高的滿意度。
+    </p>
+  </div>
+</div>
+
+<!-- ══ OUTCOMES ══ -->
+<div class="section reveal">
+  <div class="label">Outcomes</div>
+  <h2 data-i18n data-zh="專案成果" data-en="Project Results">專案成果</h2>
+  <div class="outcomes-grid">
+    <div class="outcome">
+      <div class="outcome-val">100%</div>
+      <div class="outcome-label" data-i18n data-zh="中文排版問題<br>全面修復" data-en="Chinese Typography<br>Issues Resolved">中文排版問題<br>全面修復</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val">2</div>
+      <div class="outcome-label" data-i18n data-zh="Light / Dark<br>完整主題支援" data-en="Complete Themes<br>Light & Dark Mode">Light / Dark<br>完整主題支援</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val" data-i18n data-zh="全新" data-en="New">全新</div>
+      <div class="outcome-label" data-i18n data-zh="在地化插畫<br>圖示系統" data-en="Localized Illustration<br>& Icon System">在地化插畫<br>圖示系統</div>
+    </div>
+    <div class="outcome">
+      <div class="outcome-val">✓</div>
+      <div class="outcome-label" data-i18n data-zh="客戶提報<br>一次通過" data-en="Client Presentation<br>Approved First Round">客戶提報<br>一次通過</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BUSINESS IMPACT ══ -->
+<div class="impact-divider reveal">
+  <div class="impact-divider-inner">
+    <div class="label">Business Impact</div>
+    <h2 data-i18n data-zh="設計帶來的業務影響" data-en="The Business Impact of This Design">設計帶來的業務影響</h2>
+    <div class="impact-row">
+      <div class="impact-card design-card">
+        <div class="impact-card-icon">🎨</div>
+        <div class="impact-card-content">
+          <h4 data-i18n data-zh="設計交付成果" data-en="Design Deliverables">設計交付成果</h4>
+          <div class="impact-items">
+            <div class="impact-item">
+              <div class="impact-num">86%</div>
+              <div class="impact-desc" data-i18n data-zh="客戶對安聯i探索的操作滿意度，與同業相比屬極高水準" data-en="Client satisfaction rate vs. comparable industry tools">客戶對安聯i探索的操作滿意度，與同業相比屬極高水準</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num">2</div>
+              <div class="impact-desc" data-i18n data-zh="完整雙主題支援（Light / Dark Mode），適應各種展業環境" data-en="Full dual-theme support for all presentation environments">完整雙主題支援（Light / Dark Mode），適應各種展業環境</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num">✓</div>
+              <div class="impact-desc" data-i18n data-zh="客戶提報一次通過，Prototype 展示有效建立信任" data-en="Client sign-off in first presentation round via prototype demo">客戶提報一次通過，Prototype 展示有效建立信任</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-card business-card">
+        <div class="impact-card-icon">📈</div>
+        <div class="impact-card-content">
+          <h4 data-i18n data-zh="工具上線後的業務影響" data-en="Business Impact Post-Launch">工具上線後的業務影響</h4>
+          <div class="impact-items">
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">40%</div>
+              <div class="impact-desc" data-i18n data-zh="導入兩年後，整體業務員銷售產能平均成長幅度" data-en="Average agent productivity growth within 2 years of rollout">導入兩年後，整體業務員銷售產能平均成長幅度</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">#1</div>
+              <div class="impact-desc" data-i18n data-zh="台灣業界首創，完整數位化保險銷售流程" data-en="First in Taiwan to fully digitize the end-to-end insurance sales process">台灣業界首創，完整數位化保險銷售流程</div>
+            </div>
+            <div class="impact-item">
+              <div class="impact-num" style="color:#2a9d5c">2018</div>
+              <div class="impact-desc" data-i18n data-zh="安聯i探索獲得 FinTech 金融科技發明專利認證" data-en="Allianz Discover awarded FinTech invention patent">安聯i探索獲得 FinTech 金融科技發明專利認證</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="impact-note" data-i18n
+      data-zh="業務產能成長 40% 為安聯人壽官方公開數據，摘自 <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome 2018 年安聯人壽數位轉型深度報導</a>（安聯人壽營運長陳俊宏受訪）。設計成果為本人直接參與之工作成果。"
+      data-en="The 40% productivity growth is publicly disclosed by Allianz Life Insurance, sourced from <a href='https://www.ithome.com.tw/people/124830' target='_blank'>iThome's 2018 in-depth digital transformation feature</a> (interview with COO). Design outcomes reflect direct personal contributions.">
+      業務產能成長 40% 為安聯人壽官方公開數據，摘自 <a href="https://www.ithome.com.tw/people/124830" target="_blank">iThome 2018 年安聯人壽數位轉型深度報導</a>（安聯人壽營運長陳俊宏受訪）。設計成果為本人直接參與之工作成果。
+    </p>
+  </div>
+</div>
+
+<!-- ══ QUOTE ══ -->
+<div class="quote-section reveal">
+  <div class="quote-inner">
+    <div class="quote-mark">"</div>
+    <blockquote data-i18n
+      data-zh="這個專案讓我深刻體會到，好的設計不一定是推翻重來。在了解用戶群體的特性後，選擇「漸進式優化」反而需要更細膩的判斷力——在哪些地方堅持改變，在哪些地方選擇克制。最終能透過 Prototype 展示說服安聯團隊接受優化方案，並逐漸建立信任、讓他們喜歡上調整後的介面，是整個專案最有成就感的時刻。"
+      data-en="This project taught me that great design isn't always about starting from scratch. After understanding the user base, choosing incremental refinement actually requires sharper judgment — knowing where to push for change and where to exercise restraint. The most rewarding moment was seeing the Allianz team gradually embrace our optimized interface through prototype demonstrations, building trust one iteration at a time.">
+      這個專案讓我深刻體會到，好的設計不一定是推翻重來。在了解用戶群體的特性後，選擇「漸進式優化」反而需要更細膩的判斷力——在哪些地方堅持改變，在哪些地方選擇克制。最終能透過 Prototype 展示說服安聯團隊接受優化方案，並逐漸建立信任、讓他們喜歡上調整後的介面，是整個專案最有成就感的時刻。
+    </blockquote>
+    <div class="quote-author">— Hugo Ke, UI/UX Designer</div>
+  </div>
+</div>
+
+<!-- ══ CTA ══ -->
+<div class="cta reveal">
+  <h2 data-i18n data-zh="想了解更多？" data-en="Want to Know More?">想了解更多？</h2>
+  <p class="prose" style="text-align:center;margin:0 auto 2rem" data-i18n
+    data-zh="對設計細節或合作有興趣？歡迎隨時與我聊聊。"
+    data-en="Interested in the design details or a potential collaboration? Let's chat.">
+    對設計細節或合作有興趣？歡迎隨時與我聊聊。
+  </p>
+  <a href="https://www.hugoke.club/#contact" class="btn" data-i18n data-zh="聯絡 Hugo →" data-en="Get in Touch →">聯絡 Hugo →</a>
+</div>
+
+<div class="next-project">
+  <span>Next Project</span>
+  <a href="https://www.hugoke.club" data-i18n data-zh="← 回到作品列表" data-en="← Back to Portfolio">← 回到作品列表</a>
+</div>
+
+<footer>© 2026 Hugo Ke — HugoDesign. All rights reserved.</footer>
+
+<script>
+var currentLang = 'zh';
+
+function switchLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  document.body.classList.add('lang-switching');
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+  if (lang === 'en') {
+    document.body.classList.add('lang-en');
+  } else {
+    document.body.classList.remove('lang-en');
+  }
+  var btns = document.querySelectorAll('.lang-btn');
+  btns.forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+  });
+  setTimeout(function() {
+    var els = document.querySelectorAll('[data-i18n]');
+    els.forEach(function(el) {
+      var text = el.getAttribute('data-' + lang);
+      if (text) el.innerHTML = text;
+    });
+    document.body.classList.remove('lang-switching');
+  }, 150);
+}
+
+document.getElementById('langToggle').addEventListener('click', function(e) {
+  var btn = e.target.closest('.lang-btn');
+  if (btn) switchLang(btn.getAttribute('data-lang'));
+});
+
+var reveals = document.querySelectorAll('.reveal');
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(function(el) { observer.observe(el); });
+</script>
+
+</body>
+</html>
