@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>永慶內容管理平台 · Case Study｜Hugo Ke</title>
+<meta name="description" content="為永慶集團 8 條產品線打造的內容管理平台，讓行銷與業管人員無需設計師介入即可產出符合品牌規範的活動頁面。" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   01 · Tokens
+   ========================================================= */
+:root {
+  /* Color */
+  --bg:           #0A0A0A;
+  --bg-elev:      #141414;
+  --bg-card:      rgba(255,255,255,0.04);
+  --bg-card-hov:  rgba(255,255,255,0.06);
+  --border:       rgba(255,255,255,0.08);
+  --border-hov:   rgba(255,255,255,0.15);
+  --text:         #FFFFFF;
+  --text-2:       rgba(255,255,255,0.65);
+  --text-3:       rgba(255,255,255,0.42);
+  --text-4:       rgba(255,255,255,0.25);
+  --accent:       #E8FF47;
+  --accent-dim:   rgba(232,255,71,0.55);
+  --accent-soft:  rgba(232,255,71,0.08);
+
+  /* Type */
+  --f-display:    "Bricolage Grotesque", "Noto Serif TC", serif;
+  --f-body:       "Inter Tight", "Noto Sans TC", sans-serif;
+  --f-zh:         "Noto Sans TC", "Inter Tight", sans-serif;
+  --f-zh-display: "Noto Serif TC", "Bricolage Grotesque", serif;
+  --f-mono:       "JetBrains Mono", monospace;
+
+  /* Layout */
+  --max:          1440px;
+  --gutter:       clamp(20px, 5vw, 80px);
+  --section-pad:  clamp(80px, 14vh, 180px);
+}
+
+/* =========================================================
+   02 · Reset & base
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+/* Global noise overlay (very subtle) */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.7;
+}
+
+/* Wrapping */
+.wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); position: relative; z-index: 2; }
+
+/* =========================================================
+   03 · Top nav
+   ========================================================= */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 18px 0;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background: rgba(10,10,10,0.65);
+  border-bottom: 1px solid var(--border);
+}
+.nav__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: var(--max);
+  margin: 0 auto; padding: 0 var(--gutter);
+}
+.nav__back {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--f-mono);
+  font-size: 12px; letter-spacing: 0.04em;
+  color: var(--text-2);
+  transition: color .2s;
+}
+.nav__back:hover { color: var(--accent); }
+.nav__back .arrow { transition: transform .25s; }
+.nav__back:hover .arrow { transform: translateX(-4px); }
+
+.nav__title {
+  font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.nav__title b { color: var(--text); font-weight: 500; }
+
+.lang-toggle {
+  display: inline-flex; align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.lang-toggle button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-3);
+  transition: all .2s;
+}
+.lang-toggle button.is-active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* =========================================================
+   04 · Hero
+   ========================================================= */
+.hero {
+  padding-top: 180px;
+  padding-bottom: var(--section-pad);
+  position: relative;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 200px; right: -200px;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 60%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: 0.22em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.hero__eyebrow::before {
+  content: ""; width: 32px; height: 1px; background: var(--accent);
+}
+
+.hero__title {
+  font-family: var(--f-zh-display);
+  font-size: clamp(48px, 7.5vw, 112px);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+  max-width: 16ch;
+}
+.hero__title .en {
+  display: block;
+  font-family: var(--f-display);
+  font-size: 0.42em;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--accent);
+  margin-top: 18px;
+  letter-spacing: -0.01em;
+}
+
+.hero__lede {
+  font-family: var(--f-zh);
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.65;
+  color: var(--text-2);
+  max-width: 56ch;
+  margin-bottom: 80px;
+}
+
+.hero__meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.meta__item .label {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.meta__item .value {
+  font-family: var(--f-zh);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+.meta__item .value .accent {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .hero__meta { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+}
+
+/* =========================================================
+   05 · Section primitives
+   ========================================================= */
+.section {
+  padding: var(--section-pad) 0;
+  position: relative;
+}
+.section + .section { padding-top: 0; }
+
+.section__head {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 40px;
+  margin-bottom: 64px;
+  align-items: baseline;
+}
+.section__num {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  padding-top: 10px;
+}
+.section__title {
+  font-family: var(--f-zh-display);
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.section__title .en {
+  display: block;
+  font-family: var(--f-display);
+  font-size: 0.36em;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--text-3);
+  margin-top: 12px;
+  letter-spacing: 0;
+}
+
+@media (max-width: 768px) {
+  .section__head { grid-template-columns: 1fr; gap: 16px; }
+  .section__num { padding-top: 0; }
+}
+
+/* =========================================================
+   06 · Context (背景)
+   ========================================================= */
+.context {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 40px;
+}
+.context__col { padding: 0; }
+.context__label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.context__body {
+  font-family: var(--f-zh);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-2);
+}
+.context__body p + p { margin-top: 1em; }
+.context__body strong { color: var(--text); font-weight: 500; }
+
+@media (max-width: 1024px) {
+  .context { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* =========================================================
+   07 · Scope (8 條產品線)
+   ========================================================= */
+.scope {
+  margin-top: 64px;
+  padding: 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.scope::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: var(--accent);
+}
+.scope__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap; gap: 16px;
+}
+.scope__head h3 {
+  font-family: var(--f-zh);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.scope__head .count {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+.scope__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.scope__item {
+  background: var(--bg-elev);
+  padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.scope__item .num {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-4);
+}
+.scope__item .name {
+  font-family: var(--f-zh);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .scope__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .scope { padding: 32px 24px; }
+  .scope__grid { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   08 · Decision blocks (核心設計決策)
+   ========================================================= */
+.decision {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 40px;
+  margin-bottom: 120px;
+}
+.decision:last-child { margin-bottom: 0; }
+
+.decision__num {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+}
+.decision__num span:last-child {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-3);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.decision__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+}
+
+.decision__intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+.decision__title {
+  font-family: var(--f-zh-display);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+.decision__title .en {
+  display: block;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.45em;
+  color: var(--accent-dim);
+  margin-top: 10px;
+}
+
+.decision__copy { }
+.decision__copy .problem,
+.decision__copy .solution { }
+.decision__copy .problem-label,
+.decision__copy .solution-label {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.decision__copy .solution-label {
+  color: var(--accent);
+}
+.decision__copy p {
+  font-family: var(--f-zh);
+  color: var(--text-2);
+  line-height: 1.7;
+  font-size: 15px;
+}
+.decision__copy .problem { margin-bottom: 32px; }
+.decision__copy .problem p { color: var(--text-3); }
+.decision__copy .solution p { color: var(--text); }
+
+.decision__visual {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.decision__visual:hover { border-color: var(--border-hov); }
+.decision__visual img {
+  width: 100%; height: auto; display: block;
+  transition: transform .6s ease;
+}
+.decision__visual:hover img { transform: scale(1.01); }
+
+.decision__caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 14px 18px;
+  background: linear-gradient(to top, rgba(10,10,10,0.95), transparent);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+.decision__caption b { color: var(--accent); font-weight: 500; }
+
+/* Two-image side-by-side variant */
+.decision__visual--double {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: transparent;
+  border: none;
+}
+.decision__visual--double .frame {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .decision__intro { grid-template-columns: 1fr; gap: 24px; }
+  .decision { grid-template-columns: 1fr; gap: 24px; }
+  .decision__visual--double { grid-template-columns: 1fr; }
+}
+
+/* ---------- Placeholder (NDA wireframe) ---------- */
+.ph {
+  background: var(--bg-elev);
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: 4px;
+  padding: 22px 24px 18px;
+  display: flex; flex-direction: column;
+  aspect-ratio: 4/3;
+  position: relative;
+  overflow: hidden;
+}
+.ph::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+.ph > * { position: relative; z-index: 1; }
+
+.ph__head {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--border);
+}
+.ph__lock {
+  width: 28px; height: 28px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.ph__label {
+  flex: 1;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-2);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.ph__tag {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.ph__sk {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 8px;
+}
+.ph__sk-inner {
+  width: 100%;
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+
+/* Skeleton primitives */
+.sk { background: rgba(255,255,255,0.06); border-radius: 2px; }
+.sk--accent { background: rgba(232,255,71,0.18); }
+.sk--bar { height: 10px; }
+.sk--bar-sm { height: 6px; opacity: 0.7; }
+.sk--block { height: 60px; }
+.sk--block-tall { height: 90px; }
+
+.sk-row { display: flex; gap: 8px; }
+.sk-row > * { flex: 1; }
+
+/* Variant: Block editor (3-column) */
+.ph--editor .sk-cols {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr;
+  gap: 12px;
+  height: 180px;
+}
+.ph--editor .sk-col {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 2px;
+}
+.ph--editor .sk-col .sk { height: 8px; }
+.ph--editor .sk-col .sk:first-child { width: 60%; }
+.ph--editor .sk-col-mid { background: rgba(232,255,71,0.04); border-color: rgba(232,255,71,0.12); }
+
+/* Variant: Form + preview */
+.ph--form { }
+.ph--form .sk-cols {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
+  height: 200px;
+}
+.ph--form .sk-col-form { display: flex; flex-direction: column; gap: 10px; }
+.ph--form .sk-col-form .sk-bar { height: 6px; opacity: 0.7; }
+.ph--form .sk-col-form .sk-block { height: 28px; opacity: 0.5; }
+.ph--form .sk-col-prev {
+  background: rgba(232,255,71,0.04);
+  border: 1px solid rgba(232,255,71,0.12);
+  border-radius: 2px;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ph--form .sk-col-prev .sk { height: 6px; }
+.ph--form .sk-col-prev .sk--title { background: rgba(232,255,71,0.35); width: 70%; height: 8px; margin-bottom: 4px; }
+
+/* Variant: List/table */
+.ph--list .sk-table {
+  display: flex; flex-direction: column;
+  gap: 1px;
+  background: rgba(255,255,255,0.04);
+  padding: 1px;
+  border-radius: 2px;
+}
+.ph--list .sk-row-table {
+  display: grid;
+  grid-template-columns: 50px 1fr 80px 100px 140px;
+  gap: 1px;
+  background: rgba(20,20,20,1);
+  padding: 10px 12px;
+}
+.ph--list .sk-row-table.is-head { background: rgba(232,255,71,0.05); }
+.ph--list .sk-row-table .sk { height: 6px; }
+.ph--list .sk-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.ph--list .sk-actions .sk { width: 30px; height: 14px; background: rgba(232,255,71,0.18); border-radius: 2px; }
+
+.ph__note {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  text-align: center;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+  text-transform: uppercase;
+}
+.ph__note .accent { color: var(--accent-dim); }
+
+/* =========================================================
+   09 · Legacy / Architecture handoff
+   ========================================================= */
+.legacy {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  padding: 64px;
+  margin: 64px 0;
+  position: relative;
+}
+.legacy__quote {
+  font-family: var(--f-zh-display);
+  font-size: clamp(22px, 2.4vw, 32px);
+  line-height: 1.5;
+  font-weight: 600;
+  margin-bottom: 28px;
+  max-width: 32ch;
+}
+.legacy__quote .accent { color: var(--accent); }
+.legacy__attr {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+@media (max-width: 768px) {
+  .legacy { padding: 40px 28px; }
+}
+
+/* The connecting story */
+.through-line {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-top: 48px;
+  padding: 40px 0;
+}
+.through-line__node {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 28px;
+  border-radius: 4px;
+}
+.through-line__node .year {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.through-line__node .name {
+  font-family: var(--f-zh);
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.through-line__node .desc {
+  font-family: var(--f-zh);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+.through-line__arrow {
+  font-family: var(--f-mono);
+  color: var(--accent);
+  font-size: 24px;
+  text-align: center;
+}
+.through-line__arrow span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  margin-top: 8px;
+  color: var(--text-3);
+}
+
+@media (max-width: 768px) {
+  .through-line { grid-template-columns: 1fr; }
+  .through-line__arrow { transform: rotate(90deg); margin: 0 auto; padding: 12px 0; }
+}
+
+/* =========================================================
+   10 · Outcomes (數字)
+   ========================================================= */
+.outcomes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 64px;
+}
+.outcome {
+  background: var(--bg);
+  padding: 48px 40px;
+}
+.outcome__num {
+  font-family: var(--f-display);
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.outcome__num .small {
+  font-size: 0.4em;
+  color: var(--text-2);
+}
+.outcome__label {
+  font-family: var(--f-zh);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.outcome__sub {
+  font-family: var(--f-zh);
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .outcomes { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   11 · Reflection
+   ========================================================= */
+.reflection {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 40px;
+}
+.reflection__body {
+  font-family: var(--f-zh);
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.8;
+  color: var(--text-2);
+  max-width: 60ch;
+}
+.reflection__body p + p { margin-top: 1.2em; }
+.reflection__body em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .reflection { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   12 · Footer
+   ========================================================= */
+.foot {
+  margin-top: var(--section-pad);
+  padding: 64px 0 40px;
+  border-top: 1px solid var(--border);
+}
+.foot__inner {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 40px; flex-wrap: wrap;
+}
+.foot__cta a {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-family: var(--f-zh);
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 500;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  transition: color .25s, border-color .25s;
+}
+.foot__cta a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.foot__cta a .arrow { transition: transform .3s; }
+.foot__cta a:hover .arrow { transform: translateX(6px); }
+
+.foot__meta {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  text-align: right;
+  line-height: 1.7;
+}
+
+/* =========================================================
+   13 · Reveal animations
+   ========================================================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal[data-delay="1"] { transition-delay: .08s; }
+.reveal[data-delay="2"] { transition-delay: .16s; }
+.reveal[data-delay="3"] { transition-delay: .24s; }
+.reveal[data-delay="4"] { transition-delay: .32s; }
+
+/* =========================================================
+   14 · EN-only / ZH-only
+   ========================================================= */
+[data-lang="zh"] .lang-en { display: none; }
+[data-lang="en"] .lang-zh { display: none; }
+</style>
+</head>
+
+<body>
+
+<!-- ====================================================
+     NAV
+     ==================================================== -->
+<nav class="nav">
+  <div class="nav__inner">
+    <a class="nav__back" href="../">
+      <span class="arrow">←</span>
+      <span class="lang-zh">回到作品集</span>
+      <span class="lang-en">Back to portfolio</span>
+    </a>
+    <div class="nav__title">
+      <span class="lang-zh">CASE STUDY · <b>永慶內容管理平台</b></span>
+      <span class="lang-en">CASE STUDY · <b>Yungching CMS</b></span>
+    </div>
+    <div class="lang-toggle" role="group" aria-label="Language toggle">
+      <button data-set-lang="zh" class="is-active">中</button>
+      <button data-set-lang="en">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ====================================================
+     HERO
+     ==================================================== -->
+<header class="hero">
+  <div class="wrap">
+
+    <div class="hero__eyebrow reveal">
+      <span class="lang-zh">案例研究 · 內容管理平台</span>
+      <span class="lang-en">Case Study · Content Management Platform</span>
+    </div>
+
+    <h1 class="hero__title reveal" data-delay="1">
+      <span class="lang-zh">為集團 8 條產品線打造的內容操作系統<span class="en">A content operating system for 8 product lines.</span></span>
+      <span class="lang-en">A content operating system for 8 product lines.<span class="en">為集團 8 條產品線打造的內容操作系統</span></span>
+    </h1>
+
+    <p class="hero__lede reveal" data-delay="2">
+      <span class="lang-zh">與前端工程師合作建構的多產品線內容管理平台，讓行銷與業管人員無需設計師介入即可產出符合品牌規範的活動頁面。這套架構後續成為集團其他後台系統開發的設計藍本。</span>
+      <span class="lang-en">A multi-product-line CMS built with one frontend engineer, enabling marketing and operations teams to publish brand-consistent campaign pages without designer involvement. The architecture later became the reference for other internal back-office systems across the group.</span>
+    </p>
+
+    <div class="hero__meta reveal" data-delay="3">
+      <div class="meta__item">
+        <span class="label">Year</span>
+        <span class="value">2021 — 2022</span>
+      </div>
+      <div class="meta__item">
+        <span class="label">Role</span>
+        <span class="value lang-zh">主導 UX/UI 設計</span>
+        <span class="value lang-en">Lead UX/UI Designer</span>
+      </div>
+      <div class="meta__item">
+        <span class="label">Team</span>
+        <span class="value lang-zh">1 設計 · 1 前端 · N 內容方</span>
+        <span class="value lang-en">1 Designer · 1 Frontend · N Content Producers</span>
+      </div>
+      <div class="meta__item">
+        <span class="label">Scope</span>
+        <span class="value"><span class="accent">8</span> <span class="lang-zh">條產品線</span><span class="lang-en">product lines</span></span>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+
+<!-- ====================================================
+     01 · CONTEXT
+     ==================================================== -->
+<section class="section">
+  <div class="wrap">
+
+    <div class="section__head reveal">
+      <div class="section__num">01</div>
+      <h2 class="section__title">
+        <span class="lang-zh">背景<span class="en">Context</span></span>
+        <span class="lang-en">Context<span class="en">背景</span></span>
+      </h2>
+    </div>
+
+    <div class="context reveal">
+      <div class="context__col"></div>
+      <div class="context__col">
+        <div class="context__label">
+          <span class="lang-zh">公司情境</span>
+          <span class="lang-en">Company situation</span>
+        </div>
+        <div class="context__body">
+          <p class="lang-zh">永慶房屋為全台市佔第一的房仲集團，集團底下橫跨多個業務子品牌——估價、資產管理、知識內容、店官網、代銷、共享資訊等——每條產品線都需要持續產出活動頁、品牌頁、宣傳頁面。</p>
+          <p class="lang-zh">在 CMS 上線之前，這些頁面的產出全都依賴設計師逐一手工製作，<strong>形成一個典型的設計師瓶頸</strong>：行銷與業管團隊有頁面需求，但要排隊等設計與前端資源。</p>
+          <p class="lang-en">Yungching is Taiwan's #1 real estate group, with multiple business sub-brands—appraisal, asset management, knowledge content, agent storefronts, agency, and shared information services. Each product line continuously produces campaign, brand, and promotional pages.</p>
+          <p class="lang-en">Before the CMS, every page required hand-crafted work by designers, <strong>creating a classic designer bottleneck</strong>: marketing and operations teams had page needs but had to queue for design and engineering resources.</p>
+        </div>
+      </div>
+      <div class="context__col">
+        <div class="context__label">
+          <span class="lang-zh">設計挑戰</span>
+          <span class="lang-en">The design challenge</span>
+        </div>
+        <div class="context__body">
+          <p class="lang-zh">挑戰並不只是「做一個 CMS」——而是設計一套<strong>非設計師也能正確使用的設計系統</strong>。系統必須夠彈性，讓內容方擁有組合自由度；又必須夠約束，確保產出的每一個頁面都符合品牌規範。</p>
+          <p class="lang-zh">同時這套系統要同時服務 8 條業務性質迥異的產品線，每條線的 SEO 需求、生命週期、發布流程都略有不同。</p>
+          <p class="lang-en">The challenge wasn't simply "build a CMS"—it was to design <strong>a design system that non-designers can use correctly</strong>. Flexible enough to give content producers compositional freedom, yet constrained enough to ensure every output page meets brand standards.</p>
+          <p class="lang-en">It also had to serve 8 product lines with distinct business needs—each with slightly different SEO requirements, content lifecycles, and publishing workflows.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scope grid: 8 product lines -->
+    <div class="scope reveal">
+      <div class="scope__head">
+        <h3>
+          <span class="lang-zh">服務的產品線</span>
+          <span class="lang-en">Product lines served</span>
+        </h3>
+        <span class="count">8 PRODUCT LINES</span>
+      </div>
+      <div class="scope__grid">
+        <div class="scope__item"><span class="num">01</span><span class="name">永慶估價</span></div>
+        <div class="scope__item"><span class="num">02</span><span class="name">永慶資產</span></div>
+        <div class="scope__item"><span class="num">03</span><span class="name">共享資訊</span></div>
+        <div class="scope__item"><span class="num">04</span><span class="name">永慶首頁</span></div>
+        <div class="scope__item"><span class="num">05</span><span class="name">永慶知識</span></div>
+        <div class="scope__item"><span class="num">06</span><span class="name">永慶代銷</span></div>
+        <div class="scope__item"><span class="num">07</span><span class="name">店官網</span></div>
+        <div class="scope__item"><span class="num">08</span><span class="name">永慶懶人包</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====================================================
+     02 · DESIGN DECISIONS
+     ==================================================== -->
+<section class="section">
+  <div class="wrap">
+
+    <div class="section__head reveal">
+      <div class="section__num">02</div>
+      <h2 class="section__title">
+        <span class="lang-zh">三個核心設計決策<span class="en">Three core design decisions</span></span>
+        <span class="lang-en">Three core design decisions<span class="en">三個核心設計決策</span></span>
+      </h2>
+    </div>
+
+    <!-- Decision 01 -->
+    <div class="decision reveal">
+      <div class="decision__num">
+        <span>D · 01</span>
+      </div>
+      <div class="decision__body">
+        <div class="decision__intro">
+          <h3 class="decision__title">
+            <span class="lang-zh">元件化區塊編輯器<span class="en">Component-based block editor</span></span>
+            <span class="lang-en">Component-based block editor<span class="en">元件化區塊編輯器</span></span>
+          </h3>
+          <div class="decision__copy">
+            <div class="problem">
+              <div class="problem-label">
+                <span class="lang-zh">問題</span>
+                <span class="lang-en">Problem</span>
+              </div>
+              <p class="lang-zh">內容方需要組合自由度，但若給予完全自由的編輯器，輸出品質將失控；若給予完全固定的模板，又無法滿足多元的內容需求。</p>
+              <p class="lang-en">Content producers need compositional freedom, but a fully open editor leads to inconsistent output. A fully locked template can't satisfy diverse content needs.</p>
+            </div>
+            <div class="solution">
+              <div class="solution-label">
+                <span class="lang-zh">設計決策</span>
+                <span class="lang-en">Design decision</span>
+              </div>
+              <p class="lang-zh">將品牌頁面拆解為三大類元件——<strong>標題文件、文章元件、按鈕元件</strong>——每類提供多種預先設計好的版型（Slider、大圖、並排列表、小圖列表等）。內容方透過拖拉組合既有元件來組頁，自由度與一致性同時被守住。這個架構等同於 Notion／Webflow 的區塊編輯器，但專為房仲業務內容設計。</p>
+              <p class="lang-en">I deconstructed brand pages into three component categories—<strong>headers, article blocks, and CTA buttons</strong>—each offering multiple pre-designed variants (Slider, large image, side-by-side list, small image list, etc.). Content producers compose pages by dragging existing components, preserving both freedom and consistency. The architecture mirrors Notion/Webflow's block editor, designed specifically for real estate content.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODO: 之後替換為 Figma 重繪的抽象架構圖 -->
+        <div class="decision__visual--double">
+          <div class="ph ph--editor">
+            <div class="ph__head">
+              <div class="ph__lock">⎕</div>
+              <div class="ph__label">
+                <span class="lang-zh">編輯區塊 + 預覽 · 介面保密</span>
+                <span class="lang-en">Edit + Preview · Under NDA</span>
+              </div>
+              <div class="ph__tag">WF · 01</div>
+            </div>
+            <div class="ph__sk">
+              <div class="sk-cols">
+                <div class="sk-col">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+                <div class="sk-col sk-col-mid">
+                  <div class="sk sk--accent"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+                <div class="sk-col">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ph__note">
+              <span class="lang-zh">三欄式編輯器：<span class="accent">元件選單 · 編輯區 · 即時預覽</span></span>
+              <span class="lang-en">Three-column editor: <span class="accent">component picker · edit area · live preview</span></span>
+            </div>
+          </div>
+
+          <div class="ph ph--editor">
+            <div class="ph__head">
+              <div class="ph__lock">⎕</div>
+              <div class="ph__label">
+                <span class="lang-zh">元件設定面板 · 介面保密</span>
+                <span class="lang-en">Component config · Under NDA</span>
+              </div>
+              <div class="ph__tag">WF · 02</div>
+            </div>
+            <div class="ph__sk">
+              <div class="sk-cols">
+                <div class="sk-col">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+                <div class="sk-col sk-col-mid">
+                  <div class="sk sk--accent"></div>
+                  <div class="sk"></div>
+                </div>
+                <div class="sk-col">
+                  <div class="sk sk--accent"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ph__note">
+              <span class="lang-zh">點擊任一區塊，<span class="accent">右側面板即時開啟設定</span></span>
+              <span class="lang-en">Click any block to <span class="accent">open inline settings panel</span></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Decision 02 -->
+    <div class="decision reveal">
+      <div class="decision__num">
+        <span>D · 02</span>
+      </div>
+      <div class="decision__body">
+        <div class="decision__intro">
+          <h3 class="decision__title">
+            <span class="lang-zh">內嵌 SEO 預覽<span class="en">Inline SEO preview</span></span>
+            <span class="lang-en">Inline SEO preview<span class="en">內嵌 SEO 預覽</span></span>
+          </h3>
+          <div class="decision__copy">
+            <div class="problem">
+              <div class="problem-label">
+                <span class="lang-zh">問題</span>
+                <span class="lang-en">Problem</span>
+              </div>
+              <p class="lang-zh">行銷人員不一定理解網頁標題、描述、縮圖會在 Google／Facebook／LINE 上呈現的樣子，常導致 SEO 與分享效果不佳，但設計師難以一一說明。</p>
+              <p class="lang-en">Marketing staff don't always understand how page titles, descriptions, and thumbnails render on Google, Facebook, or LINE—leading to poor SEO and sharing performance. But designers can't explain this case-by-case.</p>
+            </div>
+            <div class="solution">
+              <div class="solution-label">
+                <span class="lang-zh">設計決策</span>
+                <span class="lang-en">Design decision</span>
+              </div>
+              <p class="lang-zh">在編輯欄位旁<strong>即時顯示搜尋結果與分享預覽</strong>，搭配「不限字數，建議 20 個中文字以內」這類「不強制但給建議」的微文案。讓使用者不需要設計師指導也能寫出有效的 metadata，並理解每個欄位真正影響的是什麼。</p>
+              <p class="lang-en">I embedded <strong>live previews of search and share results</strong> next to each field, paired with non-coercive guidance microcopy like "no character limit, but 20 Chinese characters recommended." Users can write effective metadata without designer guidance, and understand what each field actually affects.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODO: 之後替換為 Figma 重繪的抽象架構圖 -->
+        <div class="ph ph--form" style="aspect-ratio: 16/8;">
+          <div class="ph__head">
+            <div class="ph__lock">⎕</div>
+            <div class="ph__label">
+              <span class="lang-zh">網頁屬性編輯頁 · 介面保密</span>
+              <span class="lang-en">Page properties · Under NDA</span>
+            </div>
+            <div class="ph__tag">WF · 03</div>
+          </div>
+          <div class="ph__sk">
+            <div class="sk-cols">
+              <div class="sk-col-form">
+                <div class="sk-bar" style="width: 30%;"></div>
+                <div class="sk--block sk" style="height: 28px;"></div>
+                <div class="sk-bar" style="width: 22%; margin-top: 8px;"></div>
+                <div class="sk--block sk" style="height: 28px;"></div>
+                <div class="sk-bar" style="width: 26%; margin-top: 8px;"></div>
+                <div class="sk--block sk" style="height: 28px;"></div>
+              </div>
+              <div class="sk-col-prev">
+                <div class="sk sk--title"></div>
+                <div class="sk" style="width: 90%;"></div>
+                <div class="sk" style="width: 78%;"></div>
+                <div class="sk" style="width: 85%;"></div>
+                <div class="sk" style="width: 65%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ph__note">
+            <span class="lang-zh">左側填寫欄位 → 右側<span class="accent">即時顯示 Google / FB / LINE 預覽</span></span>
+            <span class="lang-en">Fill fields on left → <span class="accent">live previews of Google / FB / LINE</span> on right</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Decision 03 -->
+    <div class="decision reveal">
+      <div class="decision__num">
+        <span>D · 03</span>
+      </div>
+      <div class="decision__body">
+        <div class="decision__intro">
+          <h3 class="decision__title">
+            <span class="lang-zh">內容生命週期管理<span class="en">Content lifecycle management</span></span>
+            <span class="lang-en">Content lifecycle management<span class="en">內容生命週期管理</span></span>
+          </h3>
+          <div class="decision__copy">
+            <div class="problem">
+              <div class="problem-label">
+                <span class="lang-zh">問題</span>
+                <span class="lang-en">Problem</span>
+              </div>
+              <p class="lang-zh">活動頁不是發布即結束——它有上架時間、下架時間、編輯協作、版本管理等真實工作流。傳統 CMS 把這些當作次要功能，造成行銷團隊額外的協調負擔。</p>
+              <p class="lang-en">A campaign page isn't done at publish—it has scheduled launch and takedown, collaborative editing, and version management. Traditional CMS treats these as secondary, creating extra coordination burden for marketing teams.</p>
+            </div>
+            <div class="solution">
+              <div class="solution-label">
+                <span class="lang-zh">設計決策</span>
+                <span class="lang-en">Design decision</span>
+              </div>
+              <p class="lang-zh">把「<strong>上架／下架時間預排</strong>」「<strong>頁面複製</strong>」「<strong>暫存草稿</strong>」這些貼合行銷實際工作流的功能，設計成第一級的操作。長表單的「下一步／暫存草稿／取消」按鈕在頁首與頁尾各放一次，避免長頁面操作疲勞。這些都是「懂使用者真實工作流」的 enterprise B 端細節。</p>
+              <p class="lang-en">I designed <strong>scheduled publish/unpublish</strong>, <strong>page duplication</strong>, and <strong>draft autosave</strong> as first-class actions—matching marketing's real workflow. The "Next / Save draft / Cancel" buttons appear at both top and bottom of long forms to reduce operation fatigue. These are the enterprise B2B details that signal "designed by someone who understands real users."</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODO: 之後替換為 Figma 重繪的抽象架構圖 -->
+        <div class="ph ph--list" style="aspect-ratio: 16/8;">
+          <div class="ph__head">
+            <div class="ph__lock">⎕</div>
+            <div class="ph__label">
+              <span class="lang-zh">內容列表頁 · 介面保密</span>
+              <span class="lang-en">Content list page · Under NDA</span>
+            </div>
+            <div class="ph__tag">WF · 04</div>
+          </div>
+          <div class="ph__sk">
+            <div class="sk-table" style="width:100%">
+              <div class="sk-row-table is-head">
+                <div class="sk"></div>
+                <div class="sk"></div>
+                <div class="sk"></div>
+                <div class="sk"></div>
+                <div class="sk"></div>
+              </div>
+              <div class="sk-row-table">
+                <div class="sk"></div>
+                <div class="sk" style="width: 80%;"></div>
+                <div class="sk" style="width: 60%;"></div>
+                <div class="sk" style="width: 70%;"></div>
+                <div class="sk-actions">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+              </div>
+              <div class="sk-row-table">
+                <div class="sk"></div>
+                <div class="sk" style="width: 75%;"></div>
+                <div class="sk" style="width: 60%;"></div>
+                <div class="sk" style="width: 70%;"></div>
+                <div class="sk-actions">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+              </div>
+              <div class="sk-row-table">
+                <div class="sk"></div>
+                <div class="sk" style="width: 85%;"></div>
+                <div class="sk" style="width: 60%;"></div>
+                <div class="sk" style="width: 70%;"></div>
+                <div class="sk-actions">
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                  <div class="sk"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ph__note">
+            <span class="lang-zh">每筆內容附有<span class="accent">複製、預覽、編輯、刪除</span>四種行動</span>
+            <span class="lang-en">Each row offers <span class="accent">copy, preview, edit, delete</span> actions</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====================================================
+     03 · LEGACY / THROUGH-LINE
+     ==================================================== -->
+<section class="section">
+  <div class="wrap">
+
+    <div class="section__head reveal">
+      <div class="section__num">03</div>
+      <h2 class="section__title">
+        <span class="lang-zh">架構傳承<span class="en">Architecture as legacy</span></span>
+        <span class="lang-en">Architecture as legacy<span class="en">架構傳承</span></span>
+      </h2>
+    </div>
+
+    <div class="legacy reveal">
+      <p class="legacy__quote">
+        <span class="lang-zh">「因模組清晰、易於維護，這套 CMS 架構<span class="accent">後續成為集團其他後台系統開發的參考藍本</span>。」</span>
+        <span class="lang-en">"Because of its modular clarity and maintainability, this CMS architecture <span class="accent">later became the reference blueprint for other internal back-office systems across the group.</span>"</span>
+      </p>
+      <div class="legacy__attr">
+        <span class="lang-zh">— 設計師留下的可複用資產</span>
+        <span class="lang-en">— A reusable artifact left behind by design</span>
+      </div>
+    </div>
+
+    <p class="reveal" style="font-family:var(--f-zh); color:var(--text-2); font-size:16px; line-height:1.7; max-width:62ch; margin:0 auto; text-align:center;">
+      <span class="lang-zh">這個 CMS 不是一次性的專案，而是一個會被沿用、被複製、會繼續長下去的架構。這是我四年後在 Figma 元件庫上重複的同一個工作模式——<strong style="color:var(--text);">把工作做成系統，而不是專案</strong>。</span>
+      <span class="lang-en">This CMS wasn't a one-off project—it became an architecture that gets reused, copied, and continues to grow. The same working pattern I'd repeat four years later with the Figma component library: <strong style="color:var(--text);">build systems, not projects.</strong></span>
+    </p>
+
+    <!-- Through-line: CMS → Figma -->
+    <div class="through-line reveal">
+      <div class="through-line__node">
+        <div class="year">2021 — 2022</div>
+        <div class="name">
+          <span class="lang-zh">永慶 CMS</span>
+          <span class="lang-en">Yungching CMS</span>
+        </div>
+        <div class="desc">
+          <span class="lang-zh">讓非設計師也能產出符合品牌規範的頁面。架構成為其他後台系統的範本。</span>
+          <span class="lang-en">Enabling non-designers to publish brand-consistent pages. Architecture became a template for other systems.</span>
+        </div>
+      </div>
+      <div class="through-line__arrow">
+        →
+        <span>SAME PATTERN</span>
+      </div>
+      <div class="through-line__node">
+        <div class="year">2024 — Now</div>
+        <div class="name">
+          <span class="lang-zh">永慶 Figma 元件庫</span>
+          <span class="lang-en">Yungching Figma Library</span>
+        </div>
+        <div class="desc">
+          <span class="lang-zh">1,957 件設計資產 · 177 個變數 · 4 mode token 架構，跨頻道延用。</span>
+          <span class="lang-en">1,957 design assets · 177 variables · 4-mode token system, reused across channels.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====================================================
+     04 · OUTCOMES
+     ==================================================== -->
+<section class="section">
+  <div class="wrap">
+
+    <div class="section__head reveal">
+      <div class="section__num">04</div>
+      <h2 class="section__title">
+        <span class="lang-zh">成果<span class="en">Outcomes</span></span>
+        <span class="lang-en">Outcomes<span class="en">成果</span></span>
+      </h2>
+    </div>
+
+    <div class="outcomes reveal">
+      <div class="outcome">
+        <div class="outcome__num">8<span class="small"> 條</span></div>
+        <div class="outcome__label">
+          <span class="lang-zh">服務產品線</span>
+          <span class="lang-en">Product lines served</span>
+        </div>
+        <div class="outcome__sub">
+          <span class="lang-zh">永慶估價、資產、共享資訊、首頁、知識、代銷、店官網、懶人包</span>
+          <span class="lang-en">Across all major sub-brand touchpoints in the group</span>
+        </div>
+      </div>
+      <div class="outcome">
+        <div class="outcome__num">3<span class="small"> 大類</span></div>
+        <div class="outcome__label">
+          <span class="lang-zh">元件分類</span>
+          <span class="lang-en">Component categories</span>
+        </div>
+        <div class="outcome__sub">
+          <span class="lang-zh">標題文件、文章元件、按鈕元件，每類多種版型</span>
+          <span class="lang-en">Headers, articles, buttons—each with multiple variants</span>
+        </div>
+      </div>
+      <div class="outcome">
+        <div class="outcome__num">N<span class="small">+ </span></div>
+        <div class="outcome__label">
+          <span class="lang-zh">後續沿用系統</span>
+          <span class="lang-en">Systems that adopted this pattern</span>
+        </div>
+        <div class="outcome__sub">
+          <span class="lang-zh">架構成為集團其他後台系統的設計參考藍本</span>
+          <span class="lang-en">Became the reference blueprint for other back-office systems</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====================================================
+     05 · REFLECTION
+     ==================================================== -->
+<section class="section">
+  <div class="wrap">
+
+    <div class="section__head reveal">
+      <div class="section__num">05</div>
+      <h2 class="section__title">
+        <span class="lang-zh">回顧<span class="en">Reflection</span></span>
+        <span class="lang-en">Reflection<span class="en">回顧</span></span>
+      </h2>
+    </div>
+
+    <div class="reflection reveal">
+      <div class="reflection__col"></div>
+      <div class="reflection__body">
+        <p class="lang-zh">這個案例對我的意義，遠超過它在永慶內部的影響範圍。</p>
+        <p class="lang-zh">在 2021 年，我還沒有意識到自己天生用「<em>系統</em>」而非「<em>專案</em>」在思考設計。我只是覺得：「如果這個架構做得好，後面的人會比較輕鬆。」</p>
+        <p class="lang-zh">四年後，當我主導永慶房仲網的買屋頻道改版、建立 Figma 元件庫、再延伸到租屋／知識／社區頻道時，我才回頭看見——<em>這是同一個我，做了同一件事，只是換了不同的工具與規模</em>。</p>
+        <p class="lang-zh">真正讓設計師值錢的，不是做了多少漂亮的介面，而是<em>留下多少會繼續長下去的架構</em>。</p>
+
+        <p class="lang-en">This case study means more to me than its internal impact at Yungching.</p>
+        <p class="lang-en">In 2021, I hadn't yet realized that I think in <em>systems</em>, not <em>projects</em>. I just thought: "If this architecture is well-made, the people who come after will have an easier time."</p>
+        <p class="lang-en">Four years later, when I led the Yungching real estate site's "Buy" channel redesign, built the Figma component library, and extended it to "Rent / Knowledge / Community" channels—I looked back and saw: <em>same person, same act, different tools and scale.</em></p>
+        <p class="lang-en">What makes a designer truly valuable isn't how many beautiful interfaces they ship—it's <em>how many architectures they leave behind that continue to grow.</em></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====================================================
+     FOOTER
+     ==================================================== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__inner">
+      <div class="foot__cta">
+        <a href="../">
+          <span class="lang-zh">查看更多案例</span>
+          <span class="lang-en">View more case studies</span>
+          <span class="arrow">→</span>
+        </a>
+      </div>
+      <div class="foot__meta">
+        <div>HUGO KE · 柯俊宇</div>
+        <div>SENIOR UX/UI DESIGNER · TAIPEI</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ====================================================
+     SCRIPTS
+     ==================================================== -->
+<script>
+// Language toggle
+const langButtons = document.querySelectorAll('[data-set-lang]');
+langButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.setLang;
+    document.documentElement.dataset.lang = lang;
+    document.documentElement.lang = (lang === 'zh') ? 'zh-TW' : 'en';
+    langButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+  });
+});
+
+// Reveal on scroll (lighter than GSAP, no library needed)
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-in');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
