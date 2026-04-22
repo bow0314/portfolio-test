@@ -133,6 +133,11 @@ body::before {
   color: var(--bg);
 }
 
+/* Mobile nav cleanup — hide center title on small screens, standalone page already has it in hero */
+@media (max-width: 768px) {
+  .nav__title { display: none; }
+}
+
 /* =========================================================
    04 · Hero
    ========================================================= */
@@ -500,7 +505,7 @@ body::before {
   border-radius: 4px;
   padding: 22px 24px 18px;
   display: flex; flex-direction: column;
-  aspect-ratio: 4/3;
+  min-height: 280px;
   position: relative;
   overflow: hidden;
 }
@@ -1153,7 +1158,7 @@ body::before {
         </div>
 
         <!-- TODO: 之後替換為 Figma 重繪的抽象架構圖 -->
-        <div class="ph ph--form" style="aspect-ratio: 16/8;">
+        <div class="ph ph--form">
           <div class="ph__head">
             <div class="ph__lock">⎕</div>
             <div class="ph__label">
@@ -1222,7 +1227,7 @@ body::before {
         </div>
 
         <!-- TODO: 之後替換為 Figma 重繪的抽象架構圖 -->
-        <div class="ph ph--list" style="aspect-ratio: 16/8;">
+        <div class="ph ph--list">
           <div class="ph__head">
             <div class="ph__lock">⎕</div>
             <div class="ph__label">
