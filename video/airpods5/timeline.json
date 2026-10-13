@@ -1,0 +1,34 @@
+{
+  "title": "AirPods 5 — 聽懂全世界",
+  "fps": 24,
+  "bpm": 120,
+  "width": 1920,
+  "height": 1080,
+  "duration": 60,
+  "shots": [
+    {"id": 1,  "start": 0,  "end": 4,  "in": "fade_black", "desc": "充電盒開蓋、透出暖光"},
+    {"id": 2,  "start": 4,  "end": 8,  "in": "cut",        "desc": "耳機飛出繞盒、拉遠帶出小地球"},
+    {"id": 3,  "start": 8,  "end": 12, "in": "dissolve",   "desc": "耳機繞地球飛"},
+    {"id": 4,  "start": 12, "end": 18, "in": "flash",      "desc": "市集：日文→中文"},
+    {"id": 5,  "start": 18, "end": 24, "in": "dissolve",   "desc": "海灘：西班牙文→中文"},
+    {"id": 6,  "start": 24, "end": 30, "in": "dissolve",   "desc": "街頭樂團：法文→中文"},
+    {"id": 7,  "start": 30, "end": 36, "in": "cut",        "desc": "浪打上耳機、水花慢動作、閃光", "glint": 34.5},
+    {"id": 8,  "start": 36, "end": 44, "in": "cut",        "desc": "噪音色塊被消除"},
+    {"id": 9,  "start": 44, "end": 50, "in": "dissolve",   "desc": "夕陽前旋轉、柄部特寫"},
+    {"id": 10, "start": 50, "end": 56, "in": "flash",      "desc": "地球三城亮起連成一圈"},
+    {"id": 11, "start": 56, "end": 60, "in": "dissolve",   "desc": "耳機飛回盒、合蓋、品名"}
+  ],
+  "cards": [
+    {"lines": ["聽懂全世界"], "start": 8.5, "end": 11.8, "pos": "center", "size": 96},
+    {"lines": ["Live Translation", "即時翻譯"], "start": 13.0, "end": 17.8, "pos": "lower_left", "size": 64},
+    {"lines": ["IP57", "防塵抗水"], "start": 32.0, "end": 35.8, "pos": "lower_left", "size": 72},
+    {"lines": ["主動降噪"], "start": 38.5, "end": 43.8, "pos": "lower_left", "size": 80},
+    {"lines": ["單次聆聽最長 5 小時", "搭配充電盒最長 22 小時"], "start": 45.0, "end": 49.8, "pos": "lower_left", "size": 60},
+    {"lines": ["AirPods 5"], "start": 58.3, "end": 60.0, "pos": "upper_center", "size": 120}
+  ],
+  "bubbles": [
+    {"shot": 4, "anchor": "vendor",   "src_lang": "日本語", "src": "いらっしゃいませ！", "dst": "歡迎光臨！",     "start": 12.8, "flip": 14.5, "end": 17.8},
+    {"shot": 5, "anchor": "swimmer",  "src_lang": "Español", "src": "¡Vamos a nadar!",   "dst": "一起去游泳吧！", "start": 18.8, "flip": 20.5, "end": 23.8},
+    {"shot": 6, "anchor": "fan",      "src_lang": "Français", "src": "Encore !",          "dst": "再來一首！",     "start": 24.8, "flip": 26.5, "end": 29.8}
+  ]
+}
