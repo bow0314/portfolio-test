@@ -20,7 +20,8 @@ pip install numpy scipy pillow
 ./render_all.sh /path/to/frames 0.6667 12            # 1280×720、12 samples
 blender -b -P scene.py -- --shots 7 --out /path/to/frames --scale 0.6667 --anchors-only   # 第 7 鏡閃光位置
 python3 music.py music.wav music_check.png
-python3 compose.py /path/to/frames music.wav airpods5.mp4   # 輸出 1920×1080
+python3 compose.py /path/to/frames music.wav airpods5.mp4             # 中文字幕，1920×1080
+python3 compose.py /path/to/frames music.wav airpods5_en.mp4 --lang en # 英文字幕
 ```
 
 字卡規格依據：[Apple Newsroom](https://www.apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/)、[AirPods 5 技術規格](https://support.apple.com/en-us/148759)。

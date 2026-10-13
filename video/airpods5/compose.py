@@ -1,6 +1,6 @@
 """AirPods 5〈世界同樂〉合成：渲染格 + 字卡 + 對話泡泡 + 轉場 + 光暈/暗角/顆粒 → ffmpeg 輸出 MP4。
 
-用法：python3 compose.py FRAMES_DIR MUSIC.wav OUT.mp4 [--from S] [--to S] [--scale 1.0]
+用法：python3 compose.py FRAMES_DIR MUSIC.wav OUT.mp4 [--from S] [--to S] [--scale 1.0] [--lang zh|en]
 缺格時用同一鏡最近的已渲染格代替（方便渲染途中先看預覽）。
 """
 import glob, json, math, os, subprocess, sys
@@ -15,6 +15,7 @@ FR, MUSIC, OUT = sys.argv[1:4]
 def opt(name, default):
     return float(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
 T_FROM, T_TO, SC = opt("--from", 0), opt("--to", DUR), opt("--scale", 1.0)
+LANG = sys.argv[sys.argv.index("--lang") + 1] if "--lang" in sys.argv else "zh"  # zh：中文字幕、en：英文字幕
 W, H = int(W0 * SC) // 2 * 2, int(H0 * SC) // 2 * 2
 def px(v): return int(round(v * SC))
 
@@ -103,7 +104,7 @@ def text_layer(lines, size, lang="tc"):
     y = pad
     for f, l, h_, b in zip(fonts, lines, heights, boxes):
         d.text((pad - b[0], y), l, font=f, fill=(255, 255, 255, 255))
-        ds.text((pad - b[0], y + px(3)), l, font=f, fill=(20, 20, 40, 150))
+        ds.text((pad - b[0], y + px(3)), l, font=f, fill=(20, 20, 40, 230), stroke_width=px(4), stroke_fill=(20, 20, 40, 230))
         y += h_ + gap
     sh = sh.filter(ImageFilter.GaussianBlur(px(10)))
     return Image.alpha_composite(sh, lay), pad
@@ -112,7 +113,9 @@ _card_cache = {}
 def draw_card(canvas, c, t):
     if not (c["start"] <= t < c["end"]): return
     key = id(c)
-    if key not in _card_cache: _card_cache[key] = text_layer(c["lines"], c["size"])
+    if key not in _card_cache:
+        lines = c.get("lines_en", c["lines"]) if LANG == "en" else c["lines"]
+        _card_cache[key] = text_layer(lines, c["size"])
     lay, pad = _card_cache[key]
     k_in = clamp((t - c["start"]) / 0.55)
     k_out = 1 - clamp((t - (c["end"] - 0.35)) / 0.35) if c["end"] < DUR else 1.0
@@ -162,7 +165,8 @@ def draw_bubble(canvas, bb, t, f_local):
     flipped = t >= bb["flip"]
     key = (id(bb), flipped)
     if key not in _bub_cache:
-        if flipped: _bub_cache[key] = bubble_img(bb["dst"], "tc", "中文", (77, 150, 255, 255))
+        if flipped and LANG == "en": _bub_cache[key] = bubble_img(bb["dst_en"], "tc", "English", (77, 150, 255, 255))
+        elif flipped: _bub_cache[key] = bubble_img(bb["dst"], "tc", "中文", (77, 150, 255, 255))
         else: _bub_cache[key] = bubble_img(bb["src"], "jp", bb["src_lang"], (255, 111, 97, 255))
     img, (tx, ty) = _bub_cache[key]
     s = back_out((t - bb["start"]) / 0.3)
