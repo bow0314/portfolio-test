@@ -646,7 +646,7 @@ def bud_orbit(b, t, center, radius, height, speed, phase, tilt=0.0, spin=1.0, s=
 def shot2(t, f):  # 4–8s 飛出、繞盒、拉遠帶出地球
     show("case", "buds", "globe")
     rig_at((0, 0, 0)); SUN.data.energy = 2.0
-    case_state(1.0, 1.0 - 0.6 * smooth(seg(t, 2.6, 4)))
+    case_state(1.0, 1.0 - smooth(seg(t, 2.2, 3.4)))
     for b, sd, ph in ((BUD_L, 1, 0.0), (BUD_R, -1, math.pi)):
         p0, _ = bud_in_case(sd); p0 = p0 + Vector((0, 0, 0.35))
         rise = ease_out(seg(t, 0.0, 0.7))
@@ -671,7 +671,7 @@ def shot2(t, f):  # 4–8s 飛出、繞盒、拉遠帶出地球
     tgt = vlerp((0, 0, 3.0), GLOBE_C + Vector((0, 0, 4)), k)
     look((math.sin(a) * camd, -math.cos(a) * camd, lerp(7, 34, k)), tgt, lerp(45, 40, k))
     sky_lerp(("#FFB88C", "#FFE3C4"), ("#8FD3FF", "#D9F1FF"), smooth(seg(t, 0.5, 3.5)))
-    for o_, base in zip(LIGHT_RIG, (2500, 900, 1800)): o_.data.energy = base * lerp(1, 6, k)
+    for o_, base in zip(LIGHT_RIG, (2500, 900, 1800)): o_.data.energy = base * lerp(1, 3.5, k)
 
 def globe_spin(t):
     GLOBE.rotation_euler = (0, 0, 0.12 * t)

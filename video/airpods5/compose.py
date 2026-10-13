@@ -84,7 +84,7 @@ def grade(im):
     glow = Image.fromarray((hi * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(px(22)))
     a = a + np.asarray(glow).astype(np.float32) / 255 * 0.35
     a = a * VIGNETTE
-    a = a + rng.normal(0, 0.012, (H, W, 1)).astype(np.float32)
+    a = a + rng.normal(0, 0.007, (H, W, 1)).astype(np.float32)
     return np.clip(a, 0, 1)
 
 # ---------------------------------------------------------------- 字卡
@@ -236,7 +236,7 @@ def main():
     cmd = ["ffmpeg", "-y", "-loglevel", "error",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
            "-ss", str(T_FROM), "-t", str(T_TO - T_FROM), "-i", MUSIC,
-           "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-pix_fmt", "yuv420p",
+           "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
            "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", OUT]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for g in range(g0, g1):
