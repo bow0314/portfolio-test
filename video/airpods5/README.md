@@ -1,6 +1,6 @@
 # AirPods 5〈世界同樂〉60 秒廣告
 
-全部用程式產生：Blender（Python）建模、運鏡與渲染，numpy 合成配樂與音效，PIL 做字卡和對話泡泡，ffmpeg 輸出。
+全部用程式產生：Blender（Python）建模、運鏡與渲染，numpy 合成配樂與音效（科技感電子流行，F–G–Em–Am），PIL 做字卡和對話泡泡，ffmpeg 輸出。
 沒有用 AI 生圖、生影片，也沒有用任何音檔或圖檔素材。
 
 | 檔案 | 用途 |

@@ -50,32 +50,6 @@ def highpass(x, f, order=2):
 def noise(d): return rng.standard_normal(int(d * SR))
 
 # ---------------------------------------------------------------- 樂器
-def whistle(m, d, vib=0.012):
-    t = tvec(d + 0.08)
-    f = mtof(m)
-    glide = 1 - 0.035 * np.exp(-t / 0.04)
-    vibr = 1 + vib * np.minimum(1, t / 0.25) * np.sin(2 * np.pi * 5.6 * t)
-    ph = 2 * np.pi * np.cumsum(f * glide * vibr) / SR
-    tone = np.sin(ph) + 0.08 * np.sin(2 * ph)
-    breath = bandpass(noise(d + 0.08), f * 0.8, min(f * 1.6, SR / 2 - 100)) * 0.12
-    e = np.minimum(1, t / 0.03) * np.where(t < d, 1.0, np.exp(-(t - d) / 0.03))
-    return (tone + breath) * e * 0.5
-
-def uke(m, d=1.2, bright=0.6):
-    """Karplus-Strong 撥弦。"""
-    f = mtof(m)
-    L = int(SR / f)
-    n = int(d * SR)
-    buf = rng.uniform(-1, 1, L)
-    buf = lowpass(buf, 6000 * bright + 1500)
-    out = np.empty(n)
-    dec = 0.996
-    for i in range(n):
-        out[i] = buf[i % L]
-        buf[i % L] = dec * 0.5 * (buf[i % L] + buf[(i + 1) % L])
-    out *= env_ad(d, 0.002)
-    return highpass(out, 120) * 0.6
-
 def kick(level=1.0):
     t = tvec(0.45)
     f = 45 + 95 * np.exp(-t / 0.045)
@@ -224,154 +198,187 @@ def rattle():
     t = tvec(0.9)
     return bandpass(noise(0.9), 1500, 6000) * (0.5 + 0.5 * np.sin(2 * np.pi * 22 * t)) ** 4 * np.exp(-t / 0.4) * 0.35
 
-def brass(notes, d):
-    """合成銅管短奏：鋸齒波＋濾波器包絡。"""
+def fm_lead(m, d):
+    """FM 數位主奏：載波＋2 倍頻調變，調變量隨時間衰減，帶一點滑音。"""
+    t = tvec(d + 0.06)
+    f = mtof(m) * (1 - 0.02 * np.exp(-t / 0.03))
+    idx = 1.2 + 2.8 * np.exp(-t / 0.12)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = np.sin(ph + idx * np.sin(2 * ph)) * 0.7 + signal.square(ph, 0.25) * 0.18
+    e = np.minimum(1, t / 0.004) * np.where(t < d, 1.0, np.exp(-(t - d) / 0.05)) * (0.8 + 0.2 * np.exp(-t / 0.08))
+    return lowpass(x, 7000) * e * 0.22
+
+def saw_pluck(m, d=0.22, bright=1.0):
     t = tvec(d)
-    x = np.zeros_like(t)
-    for m in notes:
-        for det in (-0.08, 0.08):
-            f = mtof(m) * 2 ** (det / 12)
-            x += 2 * ((f * t + rng.random()) % 1) - 1
-    cut = 900 + 4200 * np.exp(-t / 0.08)
-    y = np.zeros_like(x); z = 0.0
-    a_ = 1 - np.exp(-2 * np.pi * cut / SR)
-    for i in range(len(x)):  # 時變一階低通
-        z += a_[i] * (x[i] - z); y[i] = z
-    return y * env_ad(d, 0.01, 0.25) * 0.09
-
-def lead(m, d):
-    """明亮的方波主奏，疊在口哨上。"""
-    t = tvec(d + 0.05)
     f = mtof(m)
-    vib = 1 + 0.006 * np.sin(2 * np.pi * 6 * t) * np.minimum(1, t / 0.2)
-    ph = 2 * np.pi * np.cumsum(f * vib) / SR
-    x = signal.square(ph, 0.3) * 0.6 + signal.sawtooth(ph) * 0.4
-    x = lowpass(x, 5000)
-    e = np.minimum(1, t / 0.008) * np.where(t < d, 1.0, np.exp(-(t - d) / 0.04)) * (0.75 + 0.25 * np.exp(-t / 0.1))
-    return x * e * 0.16
+    x = sum((2 * ((f * k2 * t + rng.random()) % 1) - 1) * a for k2, a in ((1, 1.0), (1.005, 0.7)))
+    cut = 600 + 7000 * bright * np.exp(-t / 0.05)
+    y = np.zeros_like(x); z = 0.0
+    al = 1 - np.exp(-2 * np.pi * cut / SR)
+    for i in range(len(x)):
+        z += al[i] * (x[i] - z); y[i] = z
+    return y * np.exp(-t / 0.09) * 0.16
 
-def tamb():
-    d = 0.12; t = tvec(d)
-    return bandpass(noise(d), 6000, 14000) * np.exp(-t / 0.03) * 0.3
+def supersaw(notes, d):
+    t = tvec(d)
+    L = np.zeros_like(t); R = np.zeros_like(t)
+    for m in notes:
+        for k, det in enumerate((-0.2, -0.1, -0.03, 0.03, 0.1, 0.2)):
+            f = mtof(m) * 2 ** (det / 12)
+            w = 2 * ((f * t + rng.random()) % 1) - 1
+            if k % 2: L += w
+            else: R += w
+    st = np.stack([L, R], 1) * env_ad(d, 0.006, 0.18)[:, None]
+    return lowpass(st, 5500) * 0.035
 
-def cowbell():
-    d = 0.3; t = tvec(d)
-    x = signal.square(2 * np.pi * 540 * t) + signal.square(2 * np.pi * 800 * t)
-    return bandpass(x, 500, 3000) * np.exp(-t / 0.07) * 0.12
+def sub_bass(m, d):
+    t = tvec(d)
+    f = mtof(m)
+    ph = 2 * np.pi * f * t
+    saw = 2 * ((f * t) % 1) - 1
+    dark, bright = lowpass(saw, 380), lowpass(saw, 1300)
+    x = np.sin(ph) * 0.8 + (dark + (bright - dark) * np.exp(-t / 0.06)) * 0.45
+    return x * env_ad(d, 0.003, 0.3) * 0.6
 
-def shaker():
-    d = 0.09; t = tvec(d)
-    return highpass(noise(d), 5000) * np.sin(np.pi * t / d) ** 2 * 0.12
+def blip(m, d=0.06):
+    """數位嗶聲（降位元）。"""
+    t = tvec(d)
+    x = signal.square(2 * np.pi * mtof(m) * t)
+    x = np.round(x * np.exp(-t / 0.025) * 4) / 4
+    return x * 0.09
+
+def zap(d=0.35, f0=3000, f1=120):
+    t = tvec(d)
+    f = f1 + (f0 - f1) * np.exp(-t / (d / 4))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / (d / 2)) * 0.35
+
+def boot_up(d=2.0):
+    """開機音：上升的數位琶音＋掃頻。"""
+    out = np.zeros(int(d * SR))
+    seq = [60, 64, 67, 72, 76, 79, 84, 88, 91, 96]
+    for k, m in enumerate(seq):
+        b = blip(m, 0.08) * (0.6 + 0.4 * k / len(seq))
+        i = int(k * (d * 0.45) / len(seq) * SR); out[i:i + len(b)] += b[: len(out) - i]
+    t = tvec(d)
+    sweep = np.sin(2 * np.pi * np.cumsum(200 * 2 ** (4 * t / d)) / SR) * (t / d) ** 2 * 0.08
+    return out + sweep
+
+def glitch_stutter(x_src, t0, n=8, slice_=0.0625):
+    """把 t0 起的一小段切片重複，做出 glitch 斷音。"""
+    i = int(t0 * SR); L = int(slice_ * SR)
+    piece = x_src[i:i + L].copy()
+    for k in range(n):
+        j = i + k * L
+        x_src[j:j + L] = piece * (1 - 0.06 * k)
 
 # ---------------------------------------------------------------- 編曲
-CHORDS = [  # C – G – Am – F
-    dict(root=36, uke=(60, 64, 67, 72), pad=(60, 64, 67)),
-    dict(root=43, uke=(59, 62, 67, 71), pad=(59, 62, 67)),
-    dict(root=45, uke=(60, 64, 69, 72), pad=(60, 64, 69)),
-    dict(root=41, uke=(60, 65, 69, 72), pad=(60, 65, 69)),
+CHORDS = [  # F – G – Em – Am（IV–V–iii–vi），收在 C
+    dict(root=41, tones=(65, 69, 72, 77), stab=(65, 69, 72)),
+    dict(root=43, tones=(67, 71, 74, 79), stab=(67, 71, 74)),
+    dict(root=40, tones=(64, 67, 71, 76), stab=(64, 67, 71)),
+    dict(root=45, tones=(69, 72, 76, 81), stab=(69, 72, 76)),
 ]
-def chord(bar): return CHORDS[bar % 4]
-MELODY = [  # 每小節 (拍, 拍長, MIDI)
-    [(0, 1, 76), (1, .5, 79), (1.5, .5, 76), (2, 1, 72), (3, 1, 74)],
-    [(0, 1.5, 74), (1.5, .5, 71), (2, 1, 67), (3, .5, 69), (3.5, .5, 71)],
-    [(0, 1, 72), (1, .5, 76), (1.5, .5, 72), (2, 1, 69), (3, 1, 71)],
-    [(0, .5, 69), (.5, .5, 72), (1, 1, 77), (2, 1, 76), (3, 1, 74)],
+FINAL = dict(root=36, tones=(72, 76, 79, 84), stab=(72, 76, 79))
+def chord(bar): return FINAL if bar >= 29 else CHORDS[bar % 4]
+HOOK = [  # 每小節 (拍, 拍長, MIDI)：切分音記憶點
+    [(0, .75, 79), (.75, .75, 77), (1.5, .5, 76), (2, .5, 72), (2.5, .5, 74), (3, 1, 76)],
+    [(0, .75, 79), (.75, .75, 77), (1.5, .5, 76), (2, .5, 74), (2.5, .5, 71), (3, 1, 74)],
+    [(0, .75, 79), (.75, .75, 81), (1.5, .5, 79), (2, .5, 76), (2.5, .5, 79), (3, 1, 83)],
+    [(0, .5, 84), (.5, .5, 83), (1, .5, 81), (1.5, .5, 79), (2, 1, 76), (3, .5, 79), (3.5, .5, 81)],
 ]
-MELODY_END = [(0, .5, 69), (.5, .5, 72), (1, 1, 74), (2, 2, 72)]
+VERSE = [  # 主歌：短促、像資料跳動
+    [(0, .25, 72), (.5, .25, 72), (1, .25, 77), (1.5, .5, 76), (2.5, .25, 72), (3, .5, 74)],
+    [(0, .25, 74), (.5, .25, 74), (1, .25, 79), (1.5, .5, 77), (2.5, .25, 74), (3, .5, 71)],
+    [(0, .25, 71), (.5, .25, 71), (1, .25, 76), (1.5, .5, 74), (2.5, .25, 71), (3, .5, 79)],
+    [(0, .25, 76), (.5, .25, 76), (1, .25, 81), (1.5, .5, 79), (2.5, .5, 76), (3, .5, 72), (3.5, .5, 74)],
+]
 
 music = Bus(); drums = Bus(); sfx = Bus(); amb = Bus()
 kicks = []
-
 def bars(a, b): return range(a, b)
+QUIET = {19}   # 38–40 秒降噪後的一小節
 
-# 口哨主旋律
-LEAD_BARS = set(range(4, 18)) | set(range(20, 28))
-for b in list(bars(0, 18)) + list(bars(20, 28)):
-    phrase = MELODY[b % 4] if not (b % 8 == 7) else MELODY_END
-    up = 12 if 25 <= b < 28 else 0
+# 主旋律：8–24 秒主歌、24–36 秒副歌、40–50 秒主歌、50–58 秒副歌高八度
+for b in list(bars(4, 18)) + list(bars(20, 28)):
+    chorus = 12 <= b < 18 or b >= 25
+    phrase = (HOOK if chorus else VERSE)[b % 4]
+    up = 12 if b >= 25 else 0
     for beat, d, m in phrase:
-        if b < 2 and beat % 1: continue  # 前奏只吹長音
-        g = 0.35 if b < 2 else (0.5 if b < 22 else 0.55)
-        music.add(b * BAR + beat * BEAT, whistle(m + up, d * BEAT * 0.92), g, pan=0.1)
-        if b in LEAD_BARS:
-            music.add(b * BAR + beat * BEAT, lead(m + up, d * BEAT * 0.85), 1.0 if b < 25 else 1.2, pan=-0.15)
-# 收尾：最後一句與長音
-for beat, d, m in MELODY_END[:3]:
-    music.add(28 * BAR + beat * BEAT, whistle(m, d * BEAT * 0.92), 0.5, 0.1)
-music.add(29 * BAR, whistle(72, 1.6), 0.5, 0.1)
+        music.add(b * BAR + beat * BEAT, fm_lead(m + up, d * BEAT * 0.9), 1.0 if chorus else 0.85, pan=0.05)
+        if chorus:  # 副歌疊八度低音層
+            music.add(b * BAR + beat * BEAT, fm_lead(m + up - 12, d * BEAT * 0.9), 0.45, pan=-0.05)
+for beat, d, m in ((0, .5, 79), (.5, .5, 81), (1, .5, 83), (1.5, 2.5, 84)):  # 56–60 秒收尾句
+    music.add(28 * BAR + beat * BEAT, fm_lead(m, d * BEAT * 0.9), 1.0, 0.05)
+music.add(29 * BAR, fm_lead(84, 1.6), 1.0, 0.05)
+music.add(29 * BAR, fm_lead(72, 1.6), 0.5, 0.05)
 
-# Ukulele：琶音（4 秒起），熱鬧段改 16 分音符並刷和弦
+# 16 分音符鋸齒琶音（4 秒起）
 for b in bars(2, 29):
-    ch = chord(b)["uke"]
-    busy = b >= 4 and not (b == 19)
-    pattern = [0, 2, 1, 3, 2, 1, 3, 2]
-    if busy:
-        for k in range(16):
-            music.add(b * BAR + k * BEAT / 4, uke(ch[pattern[k % 8]], 0.5, 0.9), 0.17 + 0.08 * (k % 4 == 0), pan=-0.4)
-    else:
-        for k, idx in enumerate(pattern):
-            music.add(b * BAR + k * BEAT / 2, uke(ch[idx], 0.9), 0.3, pan=-0.35)
-    if b >= 4 and b != 19:  # 刷和弦：反拍
-        for beat in (0.5, 1.5, 2.5, 3.5):
-            for j, m in enumerate(ch):
-                music.add(b * BAR + beat * BEAT + j * 0.01, uke(m, 0.35, 1.0), 0.11, pan=0.4)
-for j, m in enumerate(CHORDS[0]["uke"]):  # 最後一下刷 C
-    music.add(29 * BAR + j * 0.02, uke(m, 2.5, 0.8), 0.3, pan=0.0)
+    tones = chord(b)["tones"]
+    seq = [0, 1, 2, 3, 2, 1, 2, 3] * 2
+    lvl = 0.6 if b < 4 else (0.5 if b in QUIET else 1.0)
+    bright = 0.4 if b in QUIET or b == 18 else 1.0
+    for k in range(16):
+        m = tones[seq[k]] + (12 if (k // 8) % 2 and b >= 12 else 0)
+        music.add(b * BAR + k * BEAT / 4, saw_pluck(m, 0.2, bright), lvl, pan=-0.4 if k % 2 else 0.4)
 
-# Pad（只鋪底）
-for b in bars(0, 29):
-    lvl = 0.6 if b < 2 else (1.4 if b == 19 else 0.6)
-    music.add(b * BAR, pad(chord(b)["pad"], BAR + 0.3), lvl)
-music.add(29 * BAR, pad(CHORDS[0]["pad"], 2.2), 1.0)
+# Supersaw 和弦：反拍短奏，副歌加長
+for b in list(bars(4, 19)) + list(bars(20, 29)):
+    st = chord(b)["stab"]
+    chorus = 12 <= b < 18 or b >= 25
+    hits = (0.5, 1.5, 2.5, 3.5) if not chorus else (0, 0.75, 1.5, 2.5, 3.25)
+    if b >= 29: hits = (0,)
+    for h in hits:
+        d = 0.18 if not chorus else 0.3
+        if b >= 29: d = 1.8
+        music.add(b * BAR + h * BEAT, supersaw(st, d), 1.0 if not chorus else 1.3)
 
-# 銅管：反拍短奏，每四小節最後來一句上行
-for b in list(bars(4, 19)) + list(bars(20, 28)):
-    ch = [n + 12 for n in chord(b)["pad"]]
-    for beat in (1.5, 3.5) if b % 4 != 3 else (1.5, 2.5, 3.0, 3.5):
-        music.add(b * BAR + beat * BEAT, brass(ch, 0.22), 1.0 if b < 25 else 1.25, pan=0.25)
-for k, m in enumerate((79, 81, 83, 84)):  # 49 秒銅管上行接 50 秒重拍
-    music.add(49.0 + k * BEAT / 2, brass([m, m - 12], 0.24), 1.3)
-music.add(29 * BAR, brass([72, 76, 79, 84], 1.2), 1.4)
+# 開場：0–4 秒開機音、低頻鋪底
+music.add(0.0, pad((60, 67, 72), 4.0), 1.6)
+sfx.add(0.9, boot_up(2.2), 0.9)
 
-# Disco 八度貝斯（4 秒起，8 分音符）
-for b in bars(2, 29):
+# 貝斯：sub＋鋸齒，8 分音符八度跳
+for b in bars(2, 30):
     r = chord(b)["root"]
+    if b >= 29:
+        music.add(b * BAR, sub_bass(r, 1.8), 1.0); continue
     if b < 4:
-        music.add(b * BAR, bass(r, BAR * 0.45), 0.6); music.add(b * BAR + 2 * BEAT, bass(r, BAR * 0.45), 0.6); continue
-    if b == 19:
-        music.add(b * BAR, bass(r, BAR * 0.9), 0.5); continue
+        for k in (0, 2): music.add(b * BAR + k * BEAT, sub_bass(r, BEAT * 1.6), 0.8)
+        continue
+    if b in QUIET:
+        music.add(b * BAR, sub_bass(r, BAR * 0.9), 0.6); continue
     for k in range(8):
-        music.add(b * BAR + k * BEAT / 2, bass(r + (12 if k % 2 else 0), BEAT * 0.45), 0.75)
-music.add(29 * BAR, bass(36, 1.8), 0.9)
+        music.add(b * BAR + k * BEAT / 2, sub_bass(r + (12 if k % 2 else 0), BEAT * 0.42), 0.85)
 
-# 鼓：four-on-the-floor、反拍開鈸、16 分鈴鼓、牛鈴
+# 鼓：four-on-the-floor、16 分 hi-hat、數位小打擊
 def groove(b, level=1.0, extra=True):
     t0 = b * BAR
     for beat in range(4):
-        drums.add(t0 + beat * BEAT, kick(), 0.95 * level); kicks.append(t0 + beat * BEAT)
-    for beat in (1, 3): drums.add(t0 + beat * BEAT, clap(), 0.9 * level, pan=0.05)
-    for beat in (1, 3): drums.add(t0 + beat * BEAT, snare(), 0.35 * level, pan=0.0)
-    for k in range(4): drums.add(t0 + (k + 0.5) * BEAT, hat(True), 0.75 * level, pan=0.35)
+        drums.add(t0 + beat * BEAT, kick(), 1.0 * level); kicks.append(t0 + beat * BEAT)
+    for beat in (1, 3):
+        drums.add(t0 + beat * BEAT, clap(), 0.85 * level, pan=0.05)
+        drums.add(t0 + beat * BEAT, snare(), 0.45 * level)
+    for k in range(4): drums.add(t0 + (k + 0.5) * BEAT, hat(True), 0.6 * level, pan=0.3)
     if extra:
-        for k in range(16): drums.add(t0 + k * BEAT / 4, tamb() if k % 2 else shaker(), (0.5 if k % 4 == 2 else 0.3) * level, pan=-0.45)
-        for beat in (0.5, 2, 3.5) if b % 2 else (0.5, 1.5):
-            drums.add(t0 + beat * BEAT, cowbell(), 0.9 * level, pan=0.3)
-for b in bars(2, 4):  # 4–8 秒：先進大鼓和鈴鼓
+        for k in range(16):
+            if k % 2: drums.add(t0 + k * BEAT / 4, hat(), 0.55 * level, pan=-0.3)
+        for beat, m in ((0.75, 96), (1.75, 91), (2.75, 96), (3.25, 100)) if b % 2 else ((0.75, 96), (2.75, 103)):
+            drums.add(t0 + beat * BEAT, blip(m), 1.0 * level, pan=0.5 if m > 96 else -0.5)
+for b in bars(2, 4):
     groove(b, 0.75, extra=False)
-    for k in range(16): drums.add(b * BAR + k * BEAT / 4, tamb(), 0.25, pan=-0.45)
+    for k in range(16): drums.add(b * BAR + k * BEAT / 4, hat(), 0.4, pan=-0.3)
 for b in bars(4, 18): groove(b)
-for k in range(8):   # 36–38 秒噪音段：鼓先悶住
+for k in range(8):   # 36–38 秒噪音段：鼓悶住
     drums.add(36.0 + k * BEAT / 2, kick(0.6), 0.6); kicks.append(36.0 + k * BEAT / 2)
 for b in bars(20, 28): groove(b)
-for b in bars(25, 28):  # 最後副歌多一層拍手
-    for k in (0.5, 1.5, 2.5, 3.5): drums.add(b * BAR + k * BEAT, clap(), 0.4, pan=-0.3)
+for b in bars(25, 28):
+    for k in (0.5, 1.5, 2.5, 3.5): drums.add(b * BAR + k * BEAT, clap(), 0.35, pan=-0.3)
 for b in bars(12, 15):  # 樂團段觀眾拍手
     for k in (1.5, 3.5): drums.add(b * BAR + k * BEAT, clap(), 0.5, pan=-0.3)
-for k in range(16):  # 39–40 秒小鼓滾奏，接回熱鬧段
-    drums.add(39.0 + k * BEAT / 8, snare(), 0.2 + 0.5 * k / 16, pan=0.0)
-for k in range(16):  # 49–50 秒小鼓滾奏
-    drums.add(49.0 + k * BEAT / 8, snare(), 0.25 + 0.6 * k / 16, pan=0.0)
-for t_ in (8.0, 50.0):  # 鼓進場與副歌的重拍
+for k in range(16):  # 39–40、49–50 秒小鼓滾奏
+    drums.add(39.0 + k * BEAT / 8, snare(), 0.2 + 0.5 * k / 16)
+    drums.add(49.0 + k * BEAT / 8, snare(), 0.25 + 0.6 * k / 16)
+for t_ in (8.0, 24.0, 50.0):
     drums.add(t_, crash(2.2), 0.6)
 drums.add(28 * BAR, kick(), 0.9); kicks.append(28 * BAR)
 drums.add(29 * BAR, kick(), 1.0); kicks.append(29 * BAR)
@@ -379,14 +386,13 @@ drums.add(29 * BAR, crash(3.0), 0.6)
 
 # 音效（對齊畫面）
 sfx.add(1.0, case_click(False), 0.9)
-sfx.add(1.05, shimmer(), 0.35)
 sfx.add(6.7, whoosh(1.0), 0.6, pan=0.4)
-sfx.add(11.4, whoosh(0.6), 0.7)
+sfx.add(11.4, whoosh(0.6), 0.7); sfx.add(12.0, zap(), 0.6)
 for bb in TL["bubbles"]:
     sfx.add(bb["start"], pop_blip(), 0.6)
     sfx.add(bb["flip"], ding(), 0.55)
 sfx.add(17.6, whoosh(0.5), 0.35); sfx.add(23.6, whoosh(0.5), 0.35)
-sfx.add(29.7, whoosh(0.5), 0.4)
+sfx.add(29.7, whoosh(0.5), 0.4); sfx.add(36.0, zap(0.4, 1800, 200), 0.4); sfx.add(50.0, zap(0.5, 4000, 80), 0.6)
 sfx.add(30.85, splash(), 1.0)
 sfx.add(33.2, rattle(), 0.8)
 sfx.add(34.4, shimmer(), 0.5)
@@ -433,6 +439,8 @@ muff = lowpass(m, 450)
 w = np.clip((tt - 35.9) / 0.1, 0, 1) * (1 - np.clip((tt - 38.0) / 0.05, 0, 1))
 m = m * (1 - w[:, None] * 0.85) + muff * (w[:, None] * 0.85)
 mix = apply_reverb(m, 0.22) + apply_reverb(drums.x, 0.06) + apply_reverb(sfx.x, 0.12) + amb.x
+for t_ in (11.5, 23.5, 47.5):  # glitch 過門
+    glitch_stutter(mix, t_, n=8, slice_=BEAT / 8)
 mix = highpass(mix, 30)
 mix = mix[: int(DUR * SR)]
 fade = int(0.6 * SR)
