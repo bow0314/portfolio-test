@@ -58,11 +58,9 @@ body {
   margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
 }
 .hint { margin-top: 10px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
-.music.next { padding: 7px 14px; }
-.music:disabled { cursor: progress; opacity: 0.75; }
 .credit { margin-top: 6px; font-size: 0.65rem; color: var(--ink-soft); opacity: 0.8; text-align: center; }
 .credit a { color: inherit; }
-.song-name { font-family: 'Cormorant Garamond', 'Noto Sans TC', serif; font-size: 0.95rem; color: var(--ink-soft); letter-spacing: 0.04em; }
+
 .music {
   font: 500 0.8rem 'Noto Sans TC', sans-serif; letter-spacing: 0.06em;
   color: var(--ink); background: rgba(255, 255, 255, 0.45);
@@ -99,13 +97,11 @@ body {
 </div>
 <div class="controls">
   <button class="music" id="music" type="button" aria-pressed="false">
-    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="label">播放鋼琴</span>
+    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="label">播放音樂</span>
   </button>
-  <button class="music next" id="next-song" type="button" aria-label="換一首">換一首 ›</button>
-  <span class="song-name" id="song-name" aria-live="polite"></span>
 </div>
 <p class="hint">拖曳轉動視角 · 滾輪縮放</p>
-<p class="credit">鋼琴取樣：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noopener">Salamander Grand Piano</a>，Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></p>
+<p class="credit">音樂：alex-morgan〈Piano Lounge Sunny Cafe Music〉，來自 <a href="https://pixabay.com/music/" target="_blank" rel="noopener">Pixabay</a></p>
 
 <script type="module">
 import * as THREE from 'three';
@@ -732,245 +728,49 @@ const grade = new ShaderPass({
 composer.addPass(grade);
 
 
-/* ---------- music: a soft piano synthesized in the browser, plus a faint breeze ---------- */
+/* ---------- music: a real piano recording, starts on tap ---------- */
+// "Piano Lounge – Sunny Cafe Music" by alex-morgan, from Pixabay (Pixabay Content License).
 // Browsers only allow sound after a tap, so nothing plays until the button is pressed.
-const music = (() => {
+// The level goes through Web Audio because iOS ignores <audio>.volume.
+(() => {
   const btn = document.getElementById('music'), label = btn.querySelector('.label');
-  let ctx = null, master, send, windGain, noiseBuf, playing = false, timer = null;
-  let nextBar = 0, bar = 0, mel = 79, lastWind = 0;
-
-  // Three light pieces. Chords are [bass, voicing...] in MIDI, voiced mid-high so nothing
-  // sits heavy in the low end; melodies stay on a major pentatonic (no tension notes).
-  // rhythms are melody onsets in eighth notes within one bar.
-  const SONGS = [
-    {
-      name: '微風', bpm: 108, beats: 4, swing: 0.06, root: 7, range: [74, 88], chimes: 0.4, left: 'breeze',
-      // bright G major with a hint of Em7 / Bm7
-      chords: { Gmaj7: [55, 59, 62, 66, 69], Em7: [52, 55, 59, 62, 66], Cmaj9: [48, 55, 59, 62, 64], D6: [50, 57, 62, 66, 71],
-                Bm7: [47, 54, 57, 62, 66], Am7: [45, 52, 55, 60, 64], Dsus: [50, 55, 57, 62, 67] },
-      sections: [['Cmaj9', 'D6', 'Bm7', 'Em7'], ['Am7', 'D6', 'Gmaj7', 'Em7'], ['Cmaj9', 'D6', 'Gmaj7', 'Gmaj7'], ['Am7', 'Bm7', 'Cmaj9', 'Dsus']],
-      order: [0, 1, 0, 3, 1, 2],
-      rhythms: [[0, 3, 4, 6], [0, 2, 3, 4, 6], [2, 4, 6, 7], [0, 1, 2, 4, 6], [0, 4, 6], [1, 2, 4, 5, 6]], cadence: [0, 2, 4]
-    },
-    {
-      name: '午後散步', bpm: 138, beats: 3, swing: 0, root: 5, range: [72, 86], chimes: 0.2, left: 'waltz',
-      // a little F major waltz, light on its feet
-      chords: { F: [53, 60, 64, 69], Am: [45, 57, 60, 64], Bb: [46, 57, 62, 65], C: [48, 60, 64, 67],
-                Dm7: [50, 57, 60, 65], Gm7: [43, 58, 62, 65] },
-      sections: [['F', 'Am', 'Bb', 'C'], ['F', 'Dm7', 'Gm7', 'C'], ['Bb', 'C', 'Am', 'Dm7'], ['Gm7', 'C', 'F', 'F']],
-      order: [0, 1, 0, 2, 3],
-      rhythms: [[0, 2, 4], [0, 3, 4], [0, 1, 2, 4], [0, 4, 5], [2, 3, 4], [0, 2, 3, 4]], cadence: [0, 2]
-    },
-    {
-      name: '草地上的光', bpm: 100, beats: 4, swing: 0.12, root: 2, range: [74, 88], chimes: 0.3, left: 'skip',
-      // sunny D major, with a skipping, playful left hand
-      chords: { D: [50, 57, 62, 66], Bm7: [47, 54, 57, 62], G: [43, 55, 59, 62], A: [45, 57, 61, 64],
-                Em7: [52, 55, 59, 62], Fsm7: [54, 57, 61, 64] },
-      sections: [['D', 'Bm7', 'G', 'A'], ['G', 'A', 'Fsm7', 'Bm7'], ['Em7', 'A', 'D', 'D'], ['G', 'Fsm7', 'Em7', 'A']],
-      order: [0, 1, 0, 2, 3, 2],
-      rhythms: [[0, 3, 4, 6], [0, 1, 3, 4, 6], [0, 2, 3, 6], [1, 2, 4, 6, 7], [0, 3, 6], [0, 2, 4, 5, 6]], cadence: [0, 3, 4]
-    }
-  ];
-  const SCALE = [0, 2, 4, 7, 9];
-  let song = SONGS[Math.max(0, Math.min(SONGS.length - 1, (parseInt(new URLSearchParams(location.search).get('song'), 10) || 1) - 1))];
-  let pending = null;
-  const BEAT = () => 60 / song.bpm, EIGHTH = () => 30 / song.bpm, BAR = () => BEAT() * song.beats;
-
-  function makeImpulse(sec) {
-    const len = Math.floor(ctx.sampleRate * sec), buf = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = buf.getChannelData(ch); let lp = 0;
-      for (let i = 0; i < len; i++) {
-        lp += ((Math.random() * 2 - 1) - lp) * 0.35; // darken the tail
-        d[i] = lp * Math.pow(1 - i / len, 3.2) * (i < ctx.sampleRate * 0.01 ? i / (ctx.sampleRate * 0.01) : 1);
-      }
-    }
-    return buf;
-  }
-  function setup() {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -20; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.4;
-    master = ctx.createGain(); master.gain.value = 0;
-    master.connect(comp).connect(ctx.destination);
-    const verb = ctx.createConvolver(); verb.buffer = makeImpulse(3.4);
-    send = ctx.createGain(); send.gain.value = 0.22;
-    send.connect(verb).connect(master);
-    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-    const nd = noiseBuf.getChannelData(0);
-    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    // breeze: filtered noise whose level follows the same gusts that move the grass
-    const wsrc = ctx.createBufferSource(); wsrc.buffer = noiseBuf; wsrc.loop = true;
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 480; bp.Q.value = 0.6;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-    windGain = ctx.createGain(); windGain.gain.value = 0;
-    wsrc.connect(bp).connect(lp).connect(windGain).connect(master);
-    wsrc.start();
-  }
-
-  // Real piano: Salamander Grand Piano V3 samples (a Yamaha C5, recorded by Alexander Holm,
-  // CC BY 3.0). Two velocity layers, one sample every minor third; neighbours are a small pitch shift.
-  const SAMPLES = [];
-  for (let o = 2; o <= 6; o++) for (const [n, pc] of [['C', 0], ['Ds', 3], ['Fs', 6], ['A', 9]]) {
-    const m = 12 * (o + 1) + pc;
-    if (m >= 42) SAMPLES.push([m, n + o]);
-  }
-  SAMPLES.push([96, 'C7']);
-  const buffers = { 4: {}, 8: {} };
-  let loading = null, dynamics = 1, stretch = 1;
-  function loadSamples() {
-    loading ??= Promise.all([4, 8].flatMap(v => SAMPLES.map(([m, name]) =>
-      fetch(`audio/piano/${name}v${v}.mp3`)
-        .then(r => { if (!r.ok) throw new Error(`${name}v${v}: ${r.status}`); return r.arrayBuffer(); })
-        .then(b => ctx.decodeAudioData(b))
-        .then(buf => { buffers[v][m] = buf; }))))
-      .catch(e => { loading = null; throw e; });
-    return loading;
-  }
-  function note(midi, t, vel, hold) {
-    vel *= dynamics;
-    let best = SAMPLES[0][0];
-    for (const [m] of SAMPLES) if (Math.abs(m - midi) < Math.abs(best - midi)) best = m;
-    // soft layer for accompaniment, the brighter one once the touch gets firmer
-    const layer = vel < 0.3 ? 4 : 8, buf = buffers[layer][best];
-    if (!buf) return;
-    const rate = Math.pow(2, (midi - best) / 12);
-    const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = rate;
-    const g = ctx.createGain(), level = layer === 4 ? 0.35 + vel * 2 : vel * 1.45;
-    const end = t + hold;
-    g.gain.setValueAtTime(level, t);
-    g.gain.setValueAtTime(level, end);
-    g.gain.setTargetAtTime(0, end, 0.16); // dampers come down
-    const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-0.45, Math.min(0.45, (midi - 62) / 40));
-    src.connect(g).connect(pan); pan.connect(master); pan.connect(send);
-    src.start(t); src.stop(Math.min(end + 1.2, t + buf.duration / rate));
-  }
-
-  const human = () => (Math.random() - 0.5) * 0.02;
-  function pickMelody(chord, strong) {
-    const chordPc = chord.slice(1).map(m => m % 12);
-    const cands = [];
-    for (let m = song.range[0]; m <= song.range[1]; m++) {
-      const pc = ((m - song.root) % 12 + 12) % 12;
-      if (!SCALE.includes(pc)) continue;
-      const dist = Math.abs(m - mel);
-      if (dist > 5) continue;
-      let w = 6 - dist + (dist === 0 ? -3 : 0);
-      if (chordPc.includes(m % 12)) w += strong ? 5 : 1.5;
-      cands.push([m, Math.max(0.3, w)]);
-    }
-    let r = Math.random() * cands.reduce((a, c) => a + c[1], 0);
-    for (const [m, w] of cands) { if ((r -= w) <= 0) return (mel = m); }
-    return mel;
-  }
-  const at = (t0, k) => t0 + (k * EIGHTH() + (k % 2 ? song.swing * EIGHTH() : 0)) * stretch + human();
-  const LEFT = {
-    // a light arpeggio that rises and falls like a breeze, pedalled per half bar
-    breeze(t0, chord, arp) {
-      const E = EIGHTH();
-      note(chord[0], at(t0, 0), 0.26, BAR() * 0.55);
-      const ext = [...arp, arp[0] + 12];
-      const seq = [null, ext[0], ext[1], ext[2], ext[3], ext[Math.min(4, ext.length - 1)], ext[3], ext[2]];
-      for (let k = 1; k < 8; k++) note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05 + (k === 4 ? 0.03 : 0), (k < 4 ? 4 - k : 8 - k) * E + 0.12);
-    },
-    // oom-pah-pah, with the "pah"s short and soft
-    waltz(t0, chord, arp) {
-      note(chord[0], at(t0, 0), 0.28, BEAT() * 1.3);
-      for (const k of [2, 4]) arp.slice(-3).forEach(m => note(m, at(t0, k) + Math.random() * 0.008, 0.13 + Math.random() * 0.04, EIGHTH() * 1.3));
-      if (Math.random() < 0.5) note(arp[0], at(t0, 5), 0.12, EIGHTH() * 0.9);
-    },
-    // bass, then short skipping broken-chord notes
-    skip(t0, chord, arp) {
-      const E = EIGHTH();
-      note(chord[0], at(t0, 0), 0.26, E * 1.6);
-      note(chord[0] + 7, at(t0, 4), 0.2, E * 1.4);
-      const seq = [null, arp[0], arp[1], arp[2], null, arp[1], arp[2], arp[3] ?? arp[0] + 12];
-      for (let k = 1; k < 8; k++) if (seq[k]) note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05, E * 0.85);
-    }
+  const VOLUME = 0.42;
+  const audio = new Audio();
+  audio.src = 'audio/sunny-cafe.mp3'; audio.loop = true; audio.preload = 'none';
+  let ctx = null, gain = null, playing = false, pauseTimer = 0;
+  const setState = on => {
+    playing = on;
+    btn.setAttribute('aria-pressed', String(on));
+    label.textContent = on ? '暫停音樂' : '播放音樂';
   };
-  function playBar(t0, i) {
-    const sec = song.sections[song.order[Math.floor(i / 4) % song.order.length]];
-    const chord = song.chords[sec[i % 4]], arp = chord.slice(1);
-    const perBar = song.beats * 2;
-    // each four-bar phrase swells toward its third bar and relaxes at the end
-    dynamics = 0.86 + 0.24 * Math.sin(Math.PI * ((i % 4) + 0.6) / 4.4);
-    LEFT[song.left](t0, chord, arp);
-    // right hand: four-bar phrases up high, a soft touch, landing on a chord tone
-    if (i >= 1) {
-      const phraseEnd = i % 4 === 3;
-      const rhythm = phraseEnd ? song.cadence : song.rhythms[Math.floor(Math.random() * song.rhythms.length)];
-      rhythm.forEach((e, idx) => {
-        const gap = ((rhythm[idx + 1] ?? perBar) - e) * EIGHTH();
-        const last = phraseEnd && idx === rhythm.length - 1;
-        const m = pickMelody(chord, e % 2 === 0 || last);
-        // the melody speaks a hair before the accompaniment, as a pianist's right hand does
-        note(m, at(t0, e) - 0.012, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT() * 2.4 : Math.max(gap * 0.9, 0.16));
-      });
-    }
-    // now and then a few wind-chime notes drift past, very quietly
-    if (Math.random() < song.chimes) {
-      const n = 1 + Math.floor(Math.random() * 3);
-      for (let c = 0; c < n; c++) {
-        const top = [];
-        for (let m = 86; m <= 99; m++) if (SCALE.includes(((m - song.root) % 12 + 12) % 12)) top.push(m);
-        note(top[Math.floor(Math.random() * top.length)], t0 + Math.random() * BAR(), 0.03 + Math.random() * 0.03, 0.9);
-      }
-    }
-  }
-  function tick() {
-    while (nextBar < ctx.currentTime + 0.5) {
-      if (pending) { song = pending; pending = null; bar = 0; mel = Math.round((song.range[0] + song.range[1]) / 2); nextBar += 0.35; }
-      // gentle rubato: a slight ebb and flow, and a little ritardando at the end of each phrase
-      stretch = bar % 4 === 3 ? 1.06 : 1 + 0.018 * Math.sin(bar * 0.9);
-      playBar(nextBar, bar++); nextBar += BAR() * stretch;
-    }
-  }
   async function start() {
-    if (!ctx) setup();
-    await ctx.resume();
-    if (!buffers[8][SAMPLES[0][0]]) {
-      label.textContent = '鋼琴載入中…'; btn.disabled = true;
-      try { await loadSamples(); }
-      catch (e) { console.error(e); label.textContent = '載入失敗，再按一次'; btn.disabled = false; return; }
-      btn.disabled = false;
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      gain = ctx.createGain(); gain.gain.value = 0;
+      ctx.createMediaElementSource(audio).connect(gain).connect(ctx.destination);
     }
-    if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15;
-    master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.setTargetAtTime(1.0, ctx.currentTime, 0.8);
-    tick(); clearInterval(timer); timer = setInterval(tick, 200);
-    playing = true; btn.setAttribute('aria-pressed', 'true'); label.textContent = '暫停鋼琴';
+    clearTimeout(pauseTimer);
+    setState(true);
+    if (audio.readyState < 3) label.textContent = '音樂載入中…';
+    try { await ctx.resume(); await audio.play(); }
+    catch (e) { console.error(e); setState(false); label.textContent = '無法播放，再按一次'; return; }
+    if (!playing) return;
+    label.textContent = '暫停音樂';
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setTargetAtTime(VOLUME, ctx.currentTime, 0.9); // slow fade in
   }
   function stop() {
-    playing = false; btn.setAttribute('aria-pressed', 'false'); label.textContent = '播放鋼琴';
-    clearInterval(timer);
-    master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.setTargetAtTime(0, ctx.currentTime, 0.35);
-    setTimeout(() => { if (!playing) ctx.suspend(); }, 1600);
+    setState(false);
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setTargetAtTime(0, ctx.currentTime, 0.35);
+    pauseTimer = setTimeout(() => { if (!playing) audio.pause(); }, 1500);
   }
   btn.addEventListener('click', () => (playing ? stop() : start()));
-  const nextBtn = document.getElementById('next-song'), songName = document.getElementById('song-name');
-  const showName = s => { songName.textContent = `${SONGS.indexOf(s) + 1}／${SONGS.length}　${s.name}`; };
-  showName(song);
-  nextBtn.addEventListener('click', () => {
-    const target = SONGS[(SONGS.indexOf(pending || song) + 1) % SONGS.length];
-    showName(target);
-    if (playing) pending = target; // switch on the next bar line so nothing gets cut off
-    else { song = target; bar = 0; mel = Math.round((song.range[0] + song.range[1]) / 2); }
-    if (!playing) start();
-  });
-  // background tabs throttle timers, so pause rather than play with gaps
+  // pause in a background tab, pick up again when the viewer comes back
   document.addEventListener('visibilitychange', () => {
-    if (!ctx || !playing) return;
-    if (document.hidden) { clearInterval(timer); ctx.suspend(); }
-    else ctx.resume().then(() => { if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15; tick(); timer = setInterval(tick, 200); });
+    if (!playing) return;
+    if (document.hidden) audio.pause(); else audio.play().catch(() => {});
   });
-  return {
-    breeze(t) {
-      if (!playing || t - lastWind < 0.25) return;
-      lastWind = t;
-      windGain.gain.setTargetAtTime(0.006 + gustAt(0, 0, t) * 0.022, ctx.currentTime, 0.5);
-    }
-  };
 })();
 
 /* ---------- resize / loop ---------- */
@@ -1008,7 +808,6 @@ function frameLoop() {
     wind.value = t;
     placeRider(dt);
     drift(dt, t);
-    music.breeze(t);
   } else if (first) { placeRider(0); drift(0, 0); }
   grade.uniforms.uTime.value = t;
   controls.update();
