@@ -59,6 +59,9 @@ body {
 }
 .hint { margin-top: 10px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
 .music.next { padding: 7px 14px; }
+.music:disabled { cursor: progress; opacity: 0.75; }
+.credit { margin-top: 6px; font-size: 0.65rem; color: var(--ink-soft); opacity: 0.8; text-align: center; }
+.credit a { color: inherit; }
 .song-name { font-family: 'Cormorant Garamond', 'Noto Sans TC', serif; font-size: 0.95rem; color: var(--ink-soft); letter-spacing: 0.04em; }
 .music {
   font: 500 0.8rem 'Noto Sans TC', sans-serif; letter-spacing: 0.06em;
@@ -102,6 +105,7 @@ body {
   <span class="song-name" id="song-name" aria-live="polite"></span>
 </div>
 <p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+<p class="credit">鋼琴取樣：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noopener">Salamander Grand Piano</a>，Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></p>
 
 <script type="module">
 import * as THREE from 'three';
@@ -790,7 +794,7 @@ const music = (() => {
     master = ctx.createGain(); master.gain.value = 0;
     master.connect(comp).connect(ctx.destination);
     const verb = ctx.createConvolver(); verb.buffer = makeImpulse(3.4);
-    send = ctx.createGain(); send.gain.value = 0.26;
+    send = ctx.createGain(); send.gain.value = 0.22;
     send.connect(verb).connect(master);
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
     const nd = noiseBuf.getChannelData(0);
@@ -804,46 +808,45 @@ const music = (() => {
     wsrc.start();
   }
 
-  // One piano note: slightly inharmonic partials, paired strings that beat gently,
-  // a two-stage decay, a felt-hammer thump and a tone that darkens as it rings.
+  // Real piano: Salamander Grand Piano V3 samples (a Yamaha C5, recorded by Alexander Holm,
+  // CC BY 3.0). Two velocity layers, one sample every minor third; neighbours are a small pitch shift.
+  const SAMPLES = [];
+  for (let o = 2; o <= 6; o++) for (const [n, pc] of [['C', 0], ['Ds', 3], ['Fs', 6], ['A', 9]]) {
+    const m = 12 * (o + 1) + pc;
+    if (m >= 42) SAMPLES.push([m, n + o]);
+  }
+  SAMPLES.push([96, 'C7']);
+  const buffers = { 4: {}, 8: {} };
+  let loading = null, dynamics = 1, stretch = 1;
+  function loadSamples() {
+    loading ??= Promise.all([4, 8].flatMap(v => SAMPLES.map(([m, name]) =>
+      fetch(`audio/piano/${name}v${v}.mp3`)
+        .then(r => { if (!r.ok) throw new Error(`${name}v${v}: ${r.status}`); return r.arrayBuffer(); })
+        .then(b => ctx.decodeAudioData(b))
+        .then(buf => { buffers[v][m] = buf; }))))
+      .catch(e => { loading = null; throw e; });
+    return loading;
+  }
   function note(midi, t, vel, hold) {
-    const f = 440 * Math.pow(2, (midi - 69) / 12);
-    const out = ctx.createGain();
-    const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.Q.value = 0.2;
-    const bright = Math.min(9000, 700 + vel * 2800 + f * 2);
-    tone.frequency.setValueAtTime(bright, t);
-    tone.frequency.exponentialRampToValueAtTime(Math.max(250, f * 1.4), t + 3);
-    const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-0.55, Math.min(0.55, (midi - 62) / 34));
-    out.connect(tone).connect(pan); pan.connect(master); pan.connect(send);
-    const tau = Math.max(0.9, Math.min(5.5, 3.2 * Math.sqrt(262 / f)));
-    const end = t + hold, B = 0.0004;
-    for (let n = 1; n <= (midi < 50 ? 7 : 6); n++) {
-      const fn = f * n * Math.sqrt(1 + B * n * n);
-      if (fn > 11000) break;
-      const amp = vel * 0.13 / Math.pow(n, 1.5 - vel * 0.5);
-      const pair = n <= 2 ? [-0.8, 0.9] : [0];
-      for (const cents of pair) {
-        const a = amp / pair.length, tn = tau / (1 + (n - 1) * 0.5);
-        const o = ctx.createOscillator(), g = ctx.createGain();
-        o.frequency.value = fn; o.detune.value = cents;
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(a, t + 0.006);
-        g.gain.setTargetAtTime(a * 0.4, t + 0.006, 0.18);
-        g.gain.setTargetAtTime(0, t + 0.25, tn);
-        g.gain.setTargetAtTime(0, end, 0.14); // damper
-        o.connect(g).connect(out);
-        o.start(t); o.stop(Math.min(end + 1, t + 0.25 + tn * 6));
-      }
-    }
-    const h = ctx.createBufferSource(); h.buffer = noiseBuf;
-    const hf = ctx.createBiquadFilter(); hf.type = 'bandpass'; hf.frequency.value = Math.min(4000, f * 3); hf.Q.value = 1.1;
-    const hg = ctx.createGain();
-    hg.gain.setValueAtTime(vel * 0.035, t); hg.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-    h.connect(hf).connect(hg).connect(out);
-    h.start(t, Math.random()); h.stop(t + 0.06);
+    vel *= dynamics;
+    let best = SAMPLES[0][0];
+    for (const [m] of SAMPLES) if (Math.abs(m - midi) < Math.abs(best - midi)) best = m;
+    // soft layer for accompaniment, the brighter one once the touch gets firmer
+    const layer = vel < 0.3 ? 4 : 8, buf = buffers[layer][best];
+    if (!buf) return;
+    const rate = Math.pow(2, (midi - best) / 12);
+    const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = rate;
+    const g = ctx.createGain(), level = layer === 4 ? 0.35 + vel * 2 : vel * 1.45;
+    const end = t + hold;
+    g.gain.setValueAtTime(level, t);
+    g.gain.setValueAtTime(level, end);
+    g.gain.setTargetAtTime(0, end, 0.16); // dampers come down
+    const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-0.45, Math.min(0.45, (midi - 62) / 40));
+    src.connect(g).connect(pan); pan.connect(master); pan.connect(send);
+    src.start(t); src.stop(Math.min(end + 1.2, t + buf.duration / rate));
   }
 
-  const human = () => (Math.random() - 0.5) * 0.018;
+  const human = () => (Math.random() - 0.5) * 0.02;
   function pickMelody(chord, strong) {
     const chordPc = chord.slice(1).map(m => m % 12);
     const cands = [];
@@ -860,7 +863,7 @@ const music = (() => {
     for (const [m, w] of cands) { if ((r -= w) <= 0) return (mel = m); }
     return mel;
   }
-  const at = (t0, k) => t0 + k * EIGHTH() + (k % 2 ? song.swing * EIGHTH() : 0) + human();
+  const at = (t0, k) => t0 + (k * EIGHTH() + (k % 2 ? song.swing * EIGHTH() : 0)) * stretch + human();
   const LEFT = {
     // a light arpeggio that rises and falls like a breeze, pedalled per half bar
     breeze(t0, chord, arp) {
@@ -889,6 +892,8 @@ const music = (() => {
     const sec = song.sections[song.order[Math.floor(i / 4) % song.order.length]];
     const chord = song.chords[sec[i % 4]], arp = chord.slice(1);
     const perBar = song.beats * 2;
+    // each four-bar phrase swells toward its third bar and relaxes at the end
+    dynamics = 0.86 + 0.24 * Math.sin(Math.PI * ((i % 4) + 0.6) / 4.4);
     LEFT[song.left](t0, chord, arp);
     // right hand: four-bar phrases up high, a soft touch, landing on a chord tone
     if (i >= 1) {
@@ -898,7 +903,8 @@ const music = (() => {
         const gap = ((rhythm[idx + 1] ?? perBar) - e) * EIGHTH();
         const last = phraseEnd && idx === rhythm.length - 1;
         const m = pickMelody(chord, e % 2 === 0 || last);
-        note(m, at(t0, e) + 0.01, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT() * 2.4 : Math.max(gap * 0.9, 0.16));
+        // the melody speaks a hair before the accompaniment, as a pianist's right hand does
+        note(m, at(t0, e) - 0.012, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT() * 2.4 : Math.max(gap * 0.9, 0.16));
       });
     }
     // now and then a few wind-chime notes drift past, very quietly
@@ -907,22 +913,30 @@ const music = (() => {
       for (let c = 0; c < n; c++) {
         const top = [];
         for (let m = 86; m <= 99; m++) if (SCALE.includes(((m - song.root) % 12 + 12) % 12)) top.push(m);
-        note(top[Math.floor(Math.random() * top.length)], t0 + Math.random() * BAR(), 0.07 + Math.random() * 0.04, 0.9);
+        note(top[Math.floor(Math.random() * top.length)], t0 + Math.random() * BAR(), 0.03 + Math.random() * 0.03, 0.9);
       }
     }
   }
   function tick() {
     while (nextBar < ctx.currentTime + 0.5) {
       if (pending) { song = pending; pending = null; bar = 0; mel = Math.round((song.range[0] + song.range[1]) / 2); nextBar += 0.35; }
-      playBar(nextBar, bar++); nextBar += BAR();
+      // gentle rubato: a slight ebb and flow, and a little ritardando at the end of each phrase
+      stretch = bar % 4 === 3 ? 1.06 : 1 + 0.018 * Math.sin(bar * 0.9);
+      playBar(nextBar, bar++); nextBar += BAR() * stretch;
     }
   }
   async function start() {
     if (!ctx) setup();
     await ctx.resume();
+    if (!buffers[8][SAMPLES[0][0]]) {
+      label.textContent = '鋼琴載入中…'; btn.disabled = true;
+      try { await loadSamples(); }
+      catch (e) { console.error(e); label.textContent = '載入失敗，再按一次'; btn.disabled = false; return; }
+      btn.disabled = false;
+    }
     if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15;
     master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.setTargetAtTime(2.4, ctx.currentTime, 0.8);
+    master.gain.setTargetAtTime(1.0, ctx.currentTime, 0.8);
     tick(); clearInterval(timer); timer = setInterval(tick, 200);
     playing = true; btn.setAttribute('aria-pressed', 'true'); label.textContent = '暫停鋼琴';
   }
