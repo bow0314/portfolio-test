@@ -55,9 +55,11 @@ body {
   transition: opacity .8s ease;
 }
 .controls {
-  margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
 }
-.hint { font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
+.hint { margin-top: 10px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
+.music.next { padding: 7px 14px; }
+.song-name { font-family: 'Cormorant Garamond', 'Noto Sans TC', serif; font-size: 0.95rem; color: var(--ink-soft); letter-spacing: 0.04em; }
 .music {
   font: 500 0.8rem 'Noto Sans TC', sans-serif; letter-spacing: 0.06em;
   color: var(--ink); background: rgba(255, 255, 255, 0.45);
@@ -96,8 +98,10 @@ body {
   <button class="music" id="music" type="button" aria-pressed="false">
     <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="label">播放鋼琴</span>
   </button>
-  <p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+  <button class="music next" id="next-song" type="button" aria-label="換一首">換一首 ›</button>
+  <span class="song-name" id="song-name" aria-live="polite"></span>
 </div>
+<p class="hint">拖曳轉動視角 · 滾輪縮放</p>
 
 <script type="module">
 import * as THREE from 'three';
@@ -728,22 +732,45 @@ composer.addPass(grade);
 // Browsers only allow sound after a tap, so nothing plays until the button is pressed.
 const music = (() => {
   const btn = document.getElementById('music'), label = btn.querySelector('.label');
-  const BEAT = 60 / 108, BAR = BEAT * 4, EIGHTH = BEAT / 2, SWING = EIGHTH * 0.06;
   let ctx = null, master, send, windGain, noiseBuf, playing = false, timer = null;
   let nextBar = 0, bar = 0, mel = 79, lastWind = 0;
 
-  // Bright G major with just a hint of the relative minor (Em7, Bm7); voiced high and open
-  // so nothing sits heavy in the low end. chords as [bass, arpeggio...] in MIDI
-  const CH = {
-    Gmaj7: [55, 59, 62, 66, 69], Em7: [52, 55, 59, 62, 66], Cmaj9: [48, 55, 59, 62, 64], D6: [50, 57, 62, 66, 71],
-    Bm7: [47, 54, 57, 62, 66], Am7: [45, 52, 55, 60, 64], Dsus: [50, 55, 57, 62, 67]
-  };
-  const SECTIONS = [
-    ['Cmaj9', 'D6', 'Bm7', 'Em7'], ['Am7', 'D6', 'Gmaj7', 'Em7'], ['Cmaj9', 'D6', 'Gmaj7', 'Gmaj7'], ['Am7', 'Bm7', 'Cmaj9', 'Dsus']
+  // Three light pieces. Chords are [bass, voicing...] in MIDI, voiced mid-high so nothing
+  // sits heavy in the low end; melodies stay on a major pentatonic (no tension notes).
+  // rhythms are melody onsets in eighth notes within one bar.
+  const SONGS = [
+    {
+      name: '微風', bpm: 108, beats: 4, swing: 0.06, root: 7, range: [74, 88], chimes: 0.4, left: 'breeze',
+      // bright G major with a hint of Em7 / Bm7
+      chords: { Gmaj7: [55, 59, 62, 66, 69], Em7: [52, 55, 59, 62, 66], Cmaj9: [48, 55, 59, 62, 64], D6: [50, 57, 62, 66, 71],
+                Bm7: [47, 54, 57, 62, 66], Am7: [45, 52, 55, 60, 64], Dsus: [50, 55, 57, 62, 67] },
+      sections: [['Cmaj9', 'D6', 'Bm7', 'Em7'], ['Am7', 'D6', 'Gmaj7', 'Em7'], ['Cmaj9', 'D6', 'Gmaj7', 'Gmaj7'], ['Am7', 'Bm7', 'Cmaj9', 'Dsus']],
+      order: [0, 1, 0, 3, 1, 2],
+      rhythms: [[0, 3, 4, 6], [0, 2, 3, 4, 6], [2, 4, 6, 7], [0, 1, 2, 4, 6], [0, 4, 6], [1, 2, 4, 5, 6]], cadence: [0, 2, 4]
+    },
+    {
+      name: '午後散步', bpm: 138, beats: 3, swing: 0, root: 5, range: [72, 86], chimes: 0.2, left: 'waltz',
+      // a little F major waltz, light on its feet
+      chords: { F: [53, 60, 64, 69], Am: [45, 57, 60, 64], Bb: [46, 57, 62, 65], C: [48, 60, 64, 67],
+                Dm7: [50, 57, 60, 65], Gm7: [43, 58, 62, 65] },
+      sections: [['F', 'Am', 'Bb', 'C'], ['F', 'Dm7', 'Gm7', 'C'], ['Bb', 'C', 'Am', 'Dm7'], ['Gm7', 'C', 'F', 'F']],
+      order: [0, 1, 0, 2, 3],
+      rhythms: [[0, 2, 4], [0, 3, 4], [0, 1, 2, 4], [0, 4, 5], [2, 3, 4], [0, 2, 3, 4]], cadence: [0, 2]
+    },
+    {
+      name: '草地上的光', bpm: 100, beats: 4, swing: 0.12, root: 2, range: [74, 88], chimes: 0.3, left: 'skip',
+      // sunny D major, with a skipping, playful left hand
+      chords: { D: [50, 57, 62, 66], Bm7: [47, 54, 57, 62], G: [43, 55, 59, 62], A: [45, 57, 61, 64],
+                Em7: [52, 55, 59, 62], Fsm7: [54, 57, 61, 64] },
+      sections: [['D', 'Bm7', 'G', 'A'], ['G', 'A', 'Fsm7', 'Bm7'], ['Em7', 'A', 'D', 'D'], ['G', 'Fsm7', 'Em7', 'A']],
+      order: [0, 1, 0, 2, 3, 2],
+      rhythms: [[0, 3, 4, 6], [0, 1, 3, 4, 6], [0, 2, 3, 6], [1, 2, 4, 6, 7], [0, 3, 6], [0, 2, 4, 5, 6]], cadence: [0, 3, 4]
+    }
   ];
-  const ORDER = [0, 1, 0, 3, 1, 2];
-  const SCALE = [0, 2, 4, 7, 9]; // G major pentatonic, relative to G – airy, no tension
-  const RHYTHMS = [[0, 3, 4, 6], [0, 2, 3, 4, 6], [2, 4, 6, 7], [0, 1, 2, 4, 6], [0, 4, 6], [1, 2, 4, 5, 6]];
+  const SCALE = [0, 2, 4, 7, 9];
+  let song = SONGS[Math.max(0, Math.min(SONGS.length - 1, (parseInt(new URLSearchParams(location.search).get('song'), 10) || 1) - 1))];
+  let pending = null;
+  const BEAT = () => 60 / song.bpm, EIGHTH = () => 30 / song.bpm, BAR = () => BEAT() * song.beats;
 
   function makeImpulse(sec) {
     const len = Math.floor(ctx.sampleRate * sec), buf = ctx.createBuffer(2, len, ctx.sampleRate);
@@ -820,8 +847,8 @@ const music = (() => {
   function pickMelody(chord, strong) {
     const chordPc = chord.slice(1).map(m => m % 12);
     const cands = [];
-    for (let m = 74; m <= 88; m++) {
-      const pc = ((m - 7) % 12 + 12) % 12;
+    for (let m = song.range[0]; m <= song.range[1]; m++) {
+      const pc = ((m - song.root) % 12 + 12) % 12;
       if (!SCALE.includes(pc)) continue;
       const dist = Math.abs(m - mel);
       if (dist > 5) continue;
@@ -833,40 +860,62 @@ const music = (() => {
     for (const [m, w] of cands) { if ((r -= w) <= 0) return (mel = m); }
     return mel;
   }
-  const at = (t0, k) => t0 + k * EIGHTH + (k % 2 ? SWING : 0) + human();
-  function playBar(t0, i) {
-    const sec = SECTIONS[ORDER[Math.floor(i / 4) % ORDER.length]];
-    const chord = CH[sec[i % 4]], arp = chord.slice(1);
-    // left hand: a light arpeggio that rises and falls like a breeze, pedalled per half bar
-    note(chord[0], at(t0, 0), 0.26, BAR * 0.55);
-    const ext = [...arp, arp[0] + 12];
-    const seq = [null, ext[0], ext[1], ext[2], ext[3], ext[4], ext[3], ext[2]];
-    for (let k = 1; k < 8; k++) {
-      const hold = (k < 4 ? 4 - k : 8 - k) * EIGHTH + 0.12;
-      note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05 + (k === 4 ? 0.03 : 0), hold);
+  const at = (t0, k) => t0 + k * EIGHTH() + (k % 2 ? song.swing * EIGHTH() : 0) + human();
+  const LEFT = {
+    // a light arpeggio that rises and falls like a breeze, pedalled per half bar
+    breeze(t0, chord, arp) {
+      const E = EIGHTH();
+      note(chord[0], at(t0, 0), 0.26, BAR() * 0.55);
+      const ext = [...arp, arp[0] + 12];
+      const seq = [null, ext[0], ext[1], ext[2], ext[3], ext[Math.min(4, ext.length - 1)], ext[3], ext[2]];
+      for (let k = 1; k < 8; k++) note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05 + (k === 4 ? 0.03 : 0), (k < 4 ? 4 - k : 8 - k) * E + 0.12);
+    },
+    // oom-pah-pah, with the "pah"s short and soft
+    waltz(t0, chord, arp) {
+      note(chord[0], at(t0, 0), 0.28, BEAT() * 1.3);
+      for (const k of [2, 4]) arp.slice(-3).forEach(m => note(m, at(t0, k) + Math.random() * 0.008, 0.13 + Math.random() * 0.04, EIGHTH() * 1.3));
+      if (Math.random() < 0.5) note(arp[0], at(t0, 5), 0.12, EIGHTH() * 0.9);
+    },
+    // bass, then short skipping broken-chord notes
+    skip(t0, chord, arp) {
+      const E = EIGHTH();
+      note(chord[0], at(t0, 0), 0.26, E * 1.6);
+      note(chord[0] + 7, at(t0, 4), 0.2, E * 1.4);
+      const seq = [null, arp[0], arp[1], arp[2], null, arp[1], arp[2], arp[3] ?? arp[0] + 12];
+      for (let k = 1; k < 8; k++) if (seq[k]) note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05, E * 0.85);
     }
+  };
+  function playBar(t0, i) {
+    const sec = song.sections[song.order[Math.floor(i / 4) % song.order.length]];
+    const chord = song.chords[sec[i % 4]], arp = chord.slice(1);
+    const perBar = song.beats * 2;
+    LEFT[song.left](t0, chord, arp);
     // right hand: four-bar phrases up high, a soft touch, landing on a chord tone
     if (i >= 1) {
       const phraseEnd = i % 4 === 3;
-      const rhythm = phraseEnd ? [0, 2, 4] : RHYTHMS[Math.floor(Math.random() * RHYTHMS.length)];
+      const rhythm = phraseEnd ? song.cadence : song.rhythms[Math.floor(Math.random() * song.rhythms.length)];
       rhythm.forEach((e, idx) => {
-        const gap = ((rhythm[idx + 1] ?? 8) - e) * EIGHTH;
+        const gap = ((rhythm[idx + 1] ?? perBar) - e) * EIGHTH();
         const last = phraseEnd && idx === rhythm.length - 1;
         const m = pickMelody(chord, e % 2 === 0 || last);
-        note(m, at(t0, e) + 0.01, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT * 2.4 : Math.max(gap * 0.9, 0.16));
+        note(m, at(t0, e) + 0.01, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT() * 2.4 : Math.max(gap * 0.9, 0.16));
       });
     }
     // now and then a few wind-chime notes drift past, very quietly
-    if (Math.random() < 0.4) {
+    if (Math.random() < song.chimes) {
       const n = 1 + Math.floor(Math.random() * 3);
       for (let c = 0; c < n; c++) {
-        const pent = [86, 88, 91, 93, 95, 98];
-        note(pent[Math.floor(Math.random() * pent.length)], t0 + Math.random() * BAR, 0.07 + Math.random() * 0.04, 0.9);
+        const top = [];
+        for (let m = 86; m <= 99; m++) if (SCALE.includes(((m - song.root) % 12 + 12) % 12)) top.push(m);
+        note(top[Math.floor(Math.random() * top.length)], t0 + Math.random() * BAR(), 0.07 + Math.random() * 0.04, 0.9);
       }
     }
   }
   function tick() {
-    while (nextBar < ctx.currentTime + 0.5) { playBar(nextBar, bar++); nextBar += BAR; }
+    while (nextBar < ctx.currentTime + 0.5) {
+      if (pending) { song = pending; pending = null; bar = 0; mel = Math.round((song.range[0] + song.range[1]) / 2); nextBar += 0.35; }
+      playBar(nextBar, bar++); nextBar += BAR();
+    }
   }
   async function start() {
     if (!ctx) setup();
@@ -885,6 +934,16 @@ const music = (() => {
     setTimeout(() => { if (!playing) ctx.suspend(); }, 1600);
   }
   btn.addEventListener('click', () => (playing ? stop() : start()));
+  const nextBtn = document.getElementById('next-song'), songName = document.getElementById('song-name');
+  const showName = s => { songName.textContent = `${SONGS.indexOf(s) + 1}／${SONGS.length}　${s.name}`; };
+  showName(song);
+  nextBtn.addEventListener('click', () => {
+    const target = SONGS[(SONGS.indexOf(pending || song) + 1) % SONGS.length];
+    showName(target);
+    if (playing) pending = target; // switch on the next bar line so nothing gets cut off
+    else { song = target; bar = 0; mel = Math.round((song.range[0] + song.range[1]) / 2); }
+    if (!playing) start();
+  });
   // background tabs throttle timers, so pause rather than play with gaps
   document.addEventListener('visibilitychange', () => {
     if (!ctx || !playing) return;
