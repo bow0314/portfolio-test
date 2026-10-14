@@ -9,24 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #ece5d6;
-  --paper-deep: #e2d9c6;
-  --ink: #5b574d;
-  --ink-soft: #8b8576;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #1f2119;
-    --paper-deep: #181a13;
-    --ink: #d9d3c2;
-    --ink-soft: #8f8a7a;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #1f2119;
-  --paper-deep: #181a13;
-  --ink: #d9d3c2;
-  --ink-soft: #8f8a7a;
+  /* pale goose-yellow paper, kept in both colour schemes so the piece always reads as a sunny print */
+  --paper: #fbf4d8;
+  --paper-deep: #f3e7b9;
+  --ink: #5e5440;
+  --ink-soft: #8f8265;
+  color-scheme: light;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -66,9 +54,28 @@ body {
   font-family: 'Cormorant Garamond', serif; font-style: italic; color: #4c6a2c;
   transition: opacity .8s ease;
 }
-.hint {
-  margin-top: 16px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center;
+.controls {
+  margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
 }
+.hint { font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
+.music {
+  font: 500 0.8rem 'Noto Sans TC', sans-serif; letter-spacing: 0.06em;
+  color: var(--ink); background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(94, 84, 64, 0.28); border-radius: 999px;
+  padding: 7px 16px 7px 12px; min-height: 36px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: background .3s ease, border-color .3s ease;
+}
+.music:hover { background: rgba(255, 255, 255, 0.75); }
+.music:focus-visible { outline: 2px solid #8a9a3c; outline-offset: 2px; }
+.music .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.music .bars i { width: 2px; height: 4px; background: currentColor; border-radius: 1px; opacity: 0.7; }
+.music[aria-pressed="true"] { background: rgba(255, 255, 255, 0.8); border-color: rgba(94, 84, 64, 0.45); }
+.music[aria-pressed="true"] .bars i { animation: bar 1.6s ease-in-out infinite; }
+.music[aria-pressed="true"] .bars i:nth-child(2) { animation-delay: -0.5s; }
+.music[aria-pressed="true"] .bars i:nth-child(3) { animation-delay: -1.0s; }
+@keyframes bar { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+@media (prefers-reduced-motion: reduce) { .music .bars i { animation: none !important; } }
 </style>
 <script type="importmap">
 { "imports": {
@@ -85,7 +92,12 @@ body {
     <div class="loading" id="loading">sketching the park…</div>
   </div>
 </div>
-<p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+<div class="controls">
+  <button class="music" id="music" type="button" aria-pressed="false">
+    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="label">播放鋼琴</span>
+  </button>
+  <p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -711,6 +723,170 @@ const grade = new ShaderPass({
 });
 composer.addPass(grade);
 
+
+/* ---------- music: a soft piano synthesized in the browser, plus a faint breeze ---------- */
+// Browsers only allow sound after a tap, so nothing plays until the button is pressed.
+const music = (() => {
+  const btn = document.getElementById('music'), label = btn.querySelector('.label');
+  const BEAT = 60 / 64, BAR = BEAT * 4, EIGHTH = BEAT / 2;
+  let ctx = null, master, send, windGain, noiseBuf, playing = false, timer = null;
+  let nextBar = 0, bar = 0, mel = 72, lastWind = 0;
+
+  // chords as [bass, arpeggio...] in MIDI, all in F major
+  const CH = {
+    F: [41, 48, 53, 57, 60, 64], Am: [45, 52, 55, 60, 64], Bb: [46, 50, 53, 57, 62],
+    C: [48, 55, 60, 64, 67], Csus: [48, 55, 60, 65, 67], Dm: [38, 45, 50, 53, 57, 60], Gm: [43, 50, 53, 58, 62]
+  };
+  const SECTIONS = [
+    ['F', 'Am', 'Bb', 'Csus'], ['Dm', 'Bb', 'F', 'C'], ['F', 'Am', 'Bb', 'C'], ['Bb', 'C', 'Am', 'Dm'], ['Gm', 'Csus', 'F', 'F']
+  ];
+  const ORDER = [0, 1, 2, 3, 0, 1, 4];
+  const SCALE = [0, 2, 4, 5, 7, 9]; // F major without the leading tone keeps it calm
+  const RHYTHMS = [[0, 4], [0, 3, 4, 6], [0, 2, 4], [2, 4, 6], [0], [0, 6], [4, 6], [0, 4, 5]];
+
+  function makeImpulse(sec) {
+    const len = Math.floor(ctx.sampleRate * sec), buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch); let lp = 0;
+      for (let i = 0; i < len; i++) {
+        lp += ((Math.random() * 2 - 1) - lp) * 0.35; // darken the tail
+        d[i] = lp * Math.pow(1 - i / len, 3.2) * (i < ctx.sampleRate * 0.01 ? i / (ctx.sampleRate * 0.01) : 1);
+      }
+    }
+    return buf;
+  }
+  function setup() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -20; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.4;
+    master = ctx.createGain(); master.gain.value = 0;
+    master.connect(comp).connect(ctx.destination);
+    const verb = ctx.createConvolver(); verb.buffer = makeImpulse(3.4);
+    send = ctx.createGain(); send.gain.value = 0.38;
+    send.connect(verb).connect(master);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    // breeze: filtered noise whose level follows the same gusts that move the grass
+    const wsrc = ctx.createBufferSource(); wsrc.buffer = noiseBuf; wsrc.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 480; bp.Q.value = 0.6;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
+    windGain = ctx.createGain(); windGain.gain.value = 0;
+    wsrc.connect(bp).connect(lp).connect(windGain).connect(master);
+    wsrc.start();
+  }
+
+  // One piano note: slightly inharmonic partials, paired strings that beat gently,
+  // a two-stage decay, a felt-hammer thump and a tone that darkens as it rings.
+  function note(midi, t, vel, hold) {
+    const f = 440 * Math.pow(2, (midi - 69) / 12);
+    const out = ctx.createGain();
+    const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.Q.value = 0.2;
+    const bright = Math.min(9000, 700 + vel * 2800 + f * 2);
+    tone.frequency.setValueAtTime(bright, t);
+    tone.frequency.exponentialRampToValueAtTime(Math.max(250, f * 1.4), t + 3);
+    const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-0.55, Math.min(0.55, (midi - 62) / 34));
+    out.connect(tone).connect(pan); pan.connect(master); pan.connect(send);
+    const tau = Math.max(0.9, Math.min(5.5, 3.2 * Math.sqrt(262 / f)));
+    const end = t + hold, B = 0.0004;
+    for (let n = 1; n <= (midi < 50 ? 7 : 6); n++) {
+      const fn = f * n * Math.sqrt(1 + B * n * n);
+      if (fn > 11000) break;
+      const amp = vel * 0.13 / Math.pow(n, 1.5 - vel * 0.5);
+      const pair = n <= 2 ? [-0.8, 0.9] : [0];
+      for (const cents of pair) {
+        const a = amp / pair.length, tn = tau / (1 + (n - 1) * 0.5);
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = fn; o.detune.value = cents;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(a, t + 0.006);
+        g.gain.setTargetAtTime(a * 0.4, t + 0.006, 0.18);
+        g.gain.setTargetAtTime(0, t + 0.25, tn);
+        g.gain.setTargetAtTime(0, end, 0.14); // damper
+        o.connect(g).connect(out);
+        o.start(t); o.stop(Math.min(end + 1, t + 0.25 + tn * 6));
+      }
+    }
+    const h = ctx.createBufferSource(); h.buffer = noiseBuf;
+    const hf = ctx.createBiquadFilter(); hf.type = 'bandpass'; hf.frequency.value = Math.min(4000, f * 3); hf.Q.value = 1.1;
+    const hg = ctx.createGain();
+    hg.gain.setValueAtTime(vel * 0.035, t); hg.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    h.connect(hf).connect(hg).connect(out);
+    h.start(t, Math.random()); h.stop(t + 0.06);
+  }
+
+  const human = () => (Math.random() - 0.5) * 0.018;
+  function pickMelody(chord, strong) {
+    const chordPc = chord.slice(1).map(m => m % 12);
+    const cands = [];
+    for (let m = 67; m <= 81; m++) {
+      const pc = ((m - 5) % 12 + 12) % 12;
+      if (!SCALE.includes(pc)) continue;
+      const dist = Math.abs(m - mel);
+      if (dist > 5) continue;
+      let w = 6 - dist + (dist === 0 ? -3 : 0);
+      if (chordPc.includes(m % 12)) w += strong ? 5 : 1.5;
+      cands.push([m, Math.max(0.3, w)]);
+    }
+    let r = Math.random() * cands.reduce((a, c) => a + c[1], 0);
+    for (const [m, w] of cands) { if ((r -= w) <= 0) return (mel = m); }
+    return mel;
+  }
+  function playBar(t0, i) {
+    const sec = SECTIONS[ORDER[Math.floor(i / 4) % ORDER.length]];
+    const chord = CH[sec[i % 4]], arp = chord.slice(1);
+    const pedal = BAR + 0.12; // pedal lifts just after the next downbeat
+    note(chord[0], t0 + human(), 0.42, pedal);
+    const pat = [0, 1, 2, 3, 4, 2, 3, 1];
+    for (let k = 1; k < 8; k++) {
+      const m = arp[Math.min(pat[k], arp.length - 1)];
+      note(m, t0 + k * EIGHTH + human(), 0.2 + Math.random() * 0.08 + (k === 4 ? 0.05 : 0), pedal - k * EIGHTH);
+    }
+    // right-hand melody: phrases of four bars, the last one settles on a long chord tone
+    const phraseEnd = i % 4 === 3, intro = i < 2;
+    if (intro) return;
+    const rhythm = phraseEnd ? (Math.random() < 0.5 ? [0] : [0, 4]) : RHYTHMS[Math.floor(Math.random() * RHYTHMS.length)];
+    rhythm.forEach((e, idx) => {
+      const len = ((rhythm[idx + 1] ?? 8) - e) * EIGHTH;
+      const m = pickMelody(chord, e % 4 === 0);
+      note(m, t0 + e * EIGHTH + human() + 0.012, 0.42 + Math.random() * 0.14, Math.max(len, EIGHTH) + (phraseEnd ? 0.8 : 0.15));
+    });
+  }
+  function tick() {
+    while (nextBar < ctx.currentTime + 0.5) { playBar(nextBar, bar++); nextBar += BAR; }
+  }
+  async function start() {
+    if (!ctx) setup();
+    await ctx.resume();
+    if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setTargetAtTime(1.9, ctx.currentTime, 0.8);
+    tick(); clearInterval(timer); timer = setInterval(tick, 200);
+    playing = true; btn.setAttribute('aria-pressed', 'true'); label.textContent = '暫停鋼琴';
+  }
+  function stop() {
+    playing = false; btn.setAttribute('aria-pressed', 'false'); label.textContent = '播放鋼琴';
+    clearInterval(timer);
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setTargetAtTime(0, ctx.currentTime, 0.35);
+    setTimeout(() => { if (!playing) ctx.suspend(); }, 1600);
+  }
+  btn.addEventListener('click', () => (playing ? stop() : start()));
+  // background tabs throttle timers, so pause rather than play with gaps
+  document.addEventListener('visibilitychange', () => {
+    if (!ctx || !playing) return;
+    if (document.hidden) { clearInterval(timer); ctx.suspend(); }
+    else ctx.resume().then(() => { if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15; tick(); timer = setInterval(tick, 200); });
+  });
+  return {
+    breeze(t) {
+      if (!playing || t - lastWind < 0.25) return;
+      lastWind = t;
+      windGain.gain.setTargetAtTime(0.006 + gustAt(0, 0, t) * 0.022, ctx.currentTime, 0.5);
+    }
+  };
+})();
+
 /* ---------- resize / loop ---------- */
 function resize() {
   const w = frame.clientWidth, h = frame.clientHeight;
@@ -746,6 +922,7 @@ function frameLoop() {
     wind.value = t;
     placeRider(dt);
     drift(dt, t);
+    music.breeze(t);
   } else if (first) { placeRider(0); drift(0, 0); }
   grade.uniforms.uTime.value = t;
   controls.update();
