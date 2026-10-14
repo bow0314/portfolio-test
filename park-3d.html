@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afternoon Park — 3D</title>
+<meta name="description" content="用 Three.js 重現的午後公園插畫：蜿蜒小徑、木柵欄、樹影與騎單車的人。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #ece5d6;
+  --paper-deep: #e2d9c6;
+  --ink: #5b574d;
+  --ink-soft: #8b8576;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1f2119;
+    --paper-deep: #181a13;
+    --ink: #d9d3c2;
+    --ink-soft: #8f8a7a;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #1f2119;
+  --paper-deep: #181a13;
+  --ink: #d9d3c2;
+  --ink-soft: #8f8a7a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: radial-gradient(120% 90% at 50% 40%, var(--paper) 0%, var(--paper-deep) 100%);
+  color: var(--ink);
+  font-family: 'Noto Sans TC', sans-serif;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 28px 16px 24px;
+  overflow-x: hidden;
+}
+.back {
+  position: fixed; top: 16px; left: 16px;
+  font-size: 0.8rem; color: var(--ink-soft); text-decoration: none;
+  letter-spacing: 0.04em;
+}
+.back:hover { color: var(--ink); }
+.quote {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: clamp(1rem, 2.6vw, 1.25rem);
+  color: var(--ink-soft); margin-bottom: 18px; text-align: center;
+}
+.frame-wrap {
+  width: min(100%, 560px, calc((100vh - 140px) * 0.81));
+  aspect-ratio: 1206 / 1487;
+  filter: drop-shadow(0 18px 28px rgba(60, 50, 30, 0.22)) drop-shadow(0 2px 4px rgba(60, 50, 30, 0.18));
+}
+.frame {
+  width: 100%; height: 100%; position: relative;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  background: #b8cf72;
+}
+.frame canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; cursor: grab; }
+.frame canvas:active { cursor: grabbing; }
+.loading {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: 'Cormorant Garamond', serif; font-style: italic; color: #4c6a2c;
+  transition: opacity .8s ease;
+}
+.hint {
+  margin-top: 16px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center;
+}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<a class="back" href="index.html">← Portfolio</a>
+<p class="quote">a quiet afternoon, somewhere along the path.</p>
+<div class="frame-wrap">
+  <div class="frame" id="frame">
+    <div class="loading" id="loading">sketching the park…</div>
+  </div>
+</div>
+<p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const frame = document.getElementById('frame');
+const isMobile = matchMedia('(max-width: 700px)').matches;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- deterministic randomness + noise ---------- */
+let seed = 7;
+const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+const rr = (a, b) => a + (b - a) * rand();
+function hash(x, y) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+const fbm = (x, y) => vnoise(x, y) * 0.55 + vnoise(x * 2.1, y * 2.1) * 0.3 + vnoise(x * 4.3, y * 4.3) * 0.15;
+const heightAt = (x, z) => (fbm(x * 0.06 + 3, z * 0.06 + 9) - 0.5) * 1.4 + z * -0.02;
+
+/* ---------- deckle (torn paper) edge mask ---------- */
+(function deckle() {
+  const W = 1206, H = 1487, inset = 22;
+  const pts = [];
+  const edge = (x0, y0, x1, y1, n) => {
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      const x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t;
+      const nx = -(y1 - y0), ny = x1 - x0, len = Math.hypot(nx, ny);
+      const j = (Math.sin(t * 37 + x0) * 0.4 + (rand() - 0.5) * 1.1 + Math.sin(t * 9 + y0) * 0.6) * 9;
+      pts.push([x + nx / len * j, y + ny / len * j]);
+    }
+  };
+  edge(inset, inset, W - inset, inset, 70);
+  edge(W - inset, inset, W - inset, H - inset, 86);
+  edge(W - inset, H - inset, inset, H - inset, 70);
+  edge(inset, H - inset, inset, inset, 86);
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="#000"/></svg>`;
+  const url = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+  frame.style.webkitMaskImage = url; frame.style.maskImage = url;
+})();
+
+/* ---------- renderer / scene / camera ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.75 : 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+frame.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#b9cf78');
+scene.fog = new THREE.Fog('#d9e4ad', 70, 150);
+
+const camera = new THREE.PerspectiveCamera(30, 1206 / 1487, 0.5, 200);
+camera.position.set(11, 42, 31);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0.5, 0, 0.5);
+controls.enableDamping = true; controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.minDistance = 26; controls.maxDistance = 64;
+controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.05;
+controls.rotateSpeed = 0.5;
+controls.update();
+
+/* ---------- lighting: warm low sun + sky/ground bounce ---------- */
+const hemi = new THREE.HemisphereLight('#fff6dc', '#5f7f2e', 1.35);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight('#fff0d2', 3.1);
+sun.position.set(14, 26, -12);
+sun.castShadow = true;
+sun.shadow.mapSize.set(isMobile ? 2048 : 4096, isMobile ? 2048 : 4096);
+const sc = sun.shadow.camera; sc.left = -26; sc.right = 26; sc.top = 26; sc.bottom = -26; sc.near = 1; sc.far = 80;
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.035;
+sun.shadow.radius = 3;
+scene.add(sun);
+// soft cool fill from the opposite side so shadows are never black
+const fill = new THREE.DirectionalLight('#cfe3ff', 0.35);
+fill.position.set(-10, 12, 14);
+scene.add(fill);
+
+/* ---------- shared wind uniform ---------- */
+const wind = { value: 0 };
+function addWind(material, strength) {
+  const patch = shader => {
+    shader.uniforms.uTime = wind;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>
+        uniform float uTime;
+        attribute vec3 sphereNormal;
+        attribute float sway;`)
+      .replace('#include <beginnormal_vertex>', `vec3 objectNormal = normalize(mix(normal, sphereNormal, 0.82));
+        #ifdef USE_TANGENT
+          vec3 objectTangent = vec3( tangent.xyz );
+        #endif`)
+      .replace('#include <begin_vertex>', `vec3 transformed = vec3(position);
+        float ph = position.x * 0.45 + position.z * 0.35;
+        transformed.x += sin(uTime * 1.3 + ph) * ${strength.toFixed(3)} * sway;
+        transformed.z += cos(uTime * 1.05 + ph * 1.3) * ${(strength * 0.7).toFixed(3)} * sway;
+        transformed.y += sin(uTime * 2.1 + ph * 2.0) * ${(strength * 0.35).toFixed(3)} * sway;`);
+  };
+  material.onBeforeCompile = patch;
+  return patch;
+}
+
+/* ---------- textures drawn on canvas ---------- */
+function leafTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.translate(64, 64);
+  // 3 overlapping pointed lobes give an illustrated "leaf cluster" silhouette
+  const lobe = (rot, len, wid, shade) => {
+    g.save(); g.rotate(rot);
+    g.beginPath();
+    g.moveTo(0, 6);
+    g.bezierCurveTo(wid, -len * 0.25, wid * 0.7, -len * 0.8, 0, -len);
+    g.bezierCurveTo(-wid * 0.7, -len * 0.8, -wid, -len * 0.25, 0, 6);
+    const grd = g.createLinearGradient(0, 0, 0, -len);
+    grd.addColorStop(0, `rgb(${shade - 40},${shade - 40},${shade - 40})`);
+    grd.addColorStop(0.6, `rgb(${shade},${shade},${shade})`);
+    grd.addColorStop(1, `rgb(${shade - 15},${shade - 15},${shade - 15})`);
+    g.fillStyle = grd; g.fill();
+    g.lineWidth = 2.2; g.strokeStyle = 'rgba(40,40,40,0.55)'; g.stroke();
+    g.beginPath(); g.moveTo(0, 2); g.lineTo(0, -len * 0.85);
+    g.lineWidth = 1.4; g.strokeStyle = 'rgba(60,60,60,0.45)'; g.stroke();
+    g.restore();
+  };
+  lobe(-0.9, 46, 20, 225); lobe(0.9, 46, 20, 225); lobe(0, 58, 23, 255);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function radialTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(64, 64, 4, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(0,0,0,0.55)'); grd.addColorStop(0.5, 'rgba(0,0,0,0.25)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+const leafTex = leafTexture();
+const aoTex = radialTexture();
+
+/* ---------- path ---------- */
+const pathCurve = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(20, 0, 15), new THREE.Vector3(12, 0, 10.5), new THREE.Vector3(5, 0, 7.5),
+  new THREE.Vector3(-0.5, 0, 5.2), new THREE.Vector3(-4.5, 0, 2), new THREE.Vector3(-6.5, 0, -2.5),
+  new THREE.Vector3(-9.5, 0, -6), new THREE.Vector3(-15, 0, -8), new THREE.Vector3(-24, 0, -9)
+], false, 'catmullrom', 0.5);
+const PATH_W = 1.55;
+const pathPts = pathCurve.getSpacedPoints(500);
+function distToPath(x, z) {
+  let m = Infinity;
+  for (let i = 0; i < pathPts.length; i += 2) { const p = pathPts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < m) m = d; }
+  return Math.sqrt(m);
+}
+
+/* ---------- ground with painterly vertex colors ---------- */
+{
+  const size = 70, seg = isMobile ? 160 : 220;
+  const geo = new THREE.PlaneGeometry(size, size, seg, seg);
+  geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position, col = new Float32Array(pos.count * 3);
+  const light = new THREE.Color('#c3d67a'), mid = new THREE.Color('#9fbf55'), deep = new THREE.Color('#7d9f3f'), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    const dp = distToPathFast(x, z);
+    let y = heightAt(x, z);
+    // carve a gentle bed for the path
+    const bed = THREE.MathUtils.smoothstep(dp, PATH_W * 0.6, PATH_W + 1.2);
+    y -= (1 - bed) * 0.06;
+    pos.setY(i, y);
+    const n = fbm(x * 0.18, z * 0.18), n2 = vnoise(x * 1.3, z * 1.3);
+    c.copy(mid).lerp(light, THREE.MathUtils.smoothstep(n, 0.35, 0.7));
+    c.lerp(deep, THREE.MathUtils.smoothstep(n2, 0.75, 1.0) * 0.5);
+    // worn grass along the path edges
+    const worn = 1 - THREE.MathUtils.smoothstep(dp, PATH_W, PATH_W + 0.9);
+    c.lerp(new THREE.Color('#d2d495'), worn * 0.45);
+    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeVertexNormals();
+  const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
+  ground.receiveShadow = true;
+  scene.add(ground);
+}
+// coarse lookup so the 50k ground vertices don't each scan the whole path
+function distToPathFast(x, z) {
+  let m = Infinity;
+  for (let i = 0; i < pathPts.length; i += 5) { const p = pathPts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < m) m = d; }
+  return Math.sqrt(m);
+}
+
+/* ---------- path ribbon with soft feathered edges ---------- */
+{
+  const N = 420, across = 6;
+  const verts = [], cols = [], idx = [];
+  const base = new THREE.Color('#ead9b6'), edgeC = new THREE.Color('#d9cf9c'), c = new THREE.Color();
+  const up = new THREE.Vector3(0, 1, 0), side = new THREE.Vector3();
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, p = pathCurve.getPointAt(t), tan = pathCurve.getTangentAt(t);
+    side.crossVectors(up, tan).normalize();
+    const wobble = 1 + (vnoise(t * 40, 2) - 0.5) * 0.12;
+    for (let j = 0; j <= across; j++) {
+      const s = (j / across) * 2 - 1;
+      const w = PATH_W * wobble * (Math.abs(s) > 0.66 ? 1.0 + (Math.abs(s) - 0.66) * 0.5 : 1) * s;
+      const x = p.x + side.x * w, z = p.z + side.z * w;
+      const y = heightAt(x, z) - 0.06 + 0.075 - Math.abs(s) * 0.03;
+      verts.push(x, y, z);
+      const sh = vnoise(x * 2.2, z * 2.2) * 0.08 + vnoise(x * 7, z * 7) * 0.05;
+      c.copy(base).lerp(edgeC, Math.max(0, Math.abs(s) - 0.55) * 1.6).offsetHSL(0, 0, -sh);
+      cols.push(c.r, c.g, c.b, Math.abs(s) > 0.84 ? 0 : 1);
+    }
+  }
+  for (let i = 0; i < N; i++) for (let j = 0; j < across; j++) {
+    const a = i * (across + 1) + j, b = a + across + 1;
+    idx.push(a, b, a + 1, a + 1, b, b + 1);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 4));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, roughness: 1, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  const path = new THREE.Mesh(geo, mat);
+  path.receiveShadow = true; path.renderOrder = 1;
+  scene.add(path);
+}
+
+/* ---------- foliage builder: leaf cards on sphere clumps, normals bent outward ---------- */
+const leafParts = [];
+function addClump(cx, cy, cz, r, count, color, sway = 1) {
+  const g = new THREE.PlaneGeometry(1, 1);
+  const tmp = new THREE.Object3D(), dir = new THREE.Vector3(), cBase = new THREE.Color(color), c = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    // bias points toward the surface, flatter bottom
+    dir.set(rr(-1, 1), rr(-0.7, 1), rr(-1, 1)).normalize();
+    const d = r * Math.pow(rand(), 0.35);
+    const px = cx + dir.x * d, py = cy + dir.y * d * 0.82, pz = cz + dir.z * d;
+    const s = rr(0.6, 0.95) * (r > 1.6 ? 1.1 : 0.85);
+    tmp.position.set(px, py, pz);
+    tmp.rotation.set(rr(0, Math.PI * 2), rr(0, Math.PI * 2), rr(0, Math.PI * 2));
+    tmp.scale.set(s, s, s);
+    tmp.updateMatrix();
+    const leaf = g.clone().applyMatrix4(tmp.matrix);
+    const n = new THREE.Vector3(px - cx, (py - cy) * 1.2 + r * 0.25, pz - cz).normalize();
+    const sn = new Float32Array(12), cl = new Float32Array(12), sw = new Float32Array(4);
+    // top & outer leaves pick up more yellow; inner ones go deeper
+    const outer = d / r;
+    c.copy(cBase).offsetHSL(rr(-0.015, 0.02), rr(-0.05, 0.05), rr(-0.06, 0.05) + (outer - 0.7) * 0.08 + dir.y * 0.04);
+    for (let k = 0; k < 4; k++) {
+      sn[k * 3] = n.x; sn[k * 3 + 1] = n.y; sn[k * 3 + 2] = n.z;
+      cl[k * 3] = c.r; cl[k * 3 + 1] = c.g; cl[k * 3 + 2] = c.b;
+      sw[k] = sway * (0.6 + outer * 0.6);
+    }
+    leaf.setAttribute('sphereNormal', new THREE.BufferAttribute(sn, 3));
+    leaf.setAttribute('color', new THREE.BufferAttribute(cl, 3));
+    leaf.setAttribute('sway', new THREE.BufferAttribute(sw, 1));
+    leafParts.push(leaf);
+  }
+}
+
+/* ---------- trees ---------- */
+const barkMat = new THREE.MeshStandardMaterial({ color: '#2e2b27', roughness: 0.9 });
+const trunkParts = [];
+function addBranch(from, to, r0, r1) {
+  const mid = from.clone().lerp(to, 0.5).add(new THREE.Vector3(rr(-0.3, 0.3), rr(0, 0.3), rr(-0.3, 0.3)));
+  const curve = new THREE.QuadraticBezierCurve3(from, mid, to);
+  const geo = new THREE.TubeGeometry(curve, 10, 1, 8, false);
+  // taper the tube
+  const p = geo.attributes.position, n = geo.attributes.normal;
+  for (let i = 0; i < p.count; i++) {
+    const ring = Math.floor(i / 9) / 10, rad = THREE.MathUtils.lerp(r0, r1, ring);
+    const ct = curve.getPoint(ring);
+    p.setXYZ(i, ct.x + n.getX(i) * rad, ct.y + n.getY(i) * rad, ct.z + n.getZ(i) * rad);
+  }
+  trunkParts.push(geo);
+}
+const aoMat = new THREE.MeshBasicMaterial({ map: aoTex, transparent: true, depthWrite: false, color: '#203010', opacity: 0.85 });
+function addContactShadow(x, z, r) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2), aoMat);
+  m.rotation.x = -Math.PI / 2; m.position.set(x, heightAt(x, z) + 0.02, z);
+  m.renderOrder = 2; scene.add(m);
+}
+function addTree(x, z, h, spread, palette, clumps = 6) {
+  const y0 = heightAt(x, z);
+  const base = new THREE.Vector3(x, y0 - 0.2, z);
+  const top = new THREE.Vector3(x + rr(-0.6, 0.6), y0 + h * 0.62, z + rr(-0.6, 0.6));
+  addBranch(base, top, 0.32 * (h / 9), 0.16 * (h / 9));
+  addContactShadow(x, z, 1.6 * (h / 9) + 0.6);
+  for (let i = 0; i < clumps; i++) {
+    const a = (i / clumps) * Math.PI * 2 + rr(-0.4, 0.4);
+    const rad = spread * rr(0.45, 0.85);
+    const cx = top.x + Math.cos(a) * rad, cz = top.z + Math.sin(a) * rad;
+    const cy = top.y + rr(-0.4, 1.4);
+    addBranch(top.clone().add(new THREE.Vector3(0, -0.4, 0)), new THREE.Vector3(cx, cy, cz), 0.13 * (h / 9), 0.04);
+    const r = spread * rr(0.55, 0.8);
+    addClump(cx, cy + r * 0.3, cz, r, Math.round(r * r * 150), palette[i % palette.length]);
+  }
+  // crown
+  addClump(top.x, top.y + spread * 0.7, top.z, spread * 0.85, Math.round(spread * spread * 130), palette[0]);
+}
+function addBush(x, z, r, color, n = 3) {
+  const y0 = heightAt(x, z);
+  addContactShadow(x, z, r * 1.5);
+  for (let i = 0; i < n; i++) {
+    const a = rr(0, Math.PI * 2), d = r * rr(0.1, 0.6);
+    const rc = r * rr(0.6, 0.9);
+    addClump(x + Math.cos(a) * d, y0 + rc * 0.75, z + Math.sin(a) * d, rc, Math.round(rc * rc * 170), color, 0.6);
+  }
+}
+
+const deepGreens = ['#2f5934', '#3b6a3a', '#355f36'];
+const brightGreens = ['#4f8a3e', '#5f9a44', '#457f39'];
+addTree(-11.5, -10.5, 10, 4.2, deepGreens, 7);   // top-left big tree
+addTree(-4, -9, 10.5, 4.0, deepGreens, 7);       // top-centre
+addTree(-1.5, -1.2, 5.2, 2.3, brightGreens, 5);  // small round tree in the meadow
+addTree(9.5, -3.5, 11.5, 4.6, brightGreens, 8);  // big tree on the right
+addTree(13.5, 3.5, 9, 3.6, deepGreens, 6);
+addTree(4, -12, 9, 3.4, deepGreens, 6);
+// foreground hedge, lower-left – gives the frame depth
+addBush(-7.5, 9.5, 3.0, '#2c5532', 5);
+addBush(-4.6, 14.2, 3.2, '#335d35', 5);
+addBush(-9.5, 14.5, 3.0, '#2a5030', 4);
+addBush(-1.8, 18.5, 2.6, '#3a6838', 4);
+addBush(-10.5, 4.5, 2.4, '#335d35', 3);
+addBush(-12.5, 9, 2.6, '#2c5532', 3);
+// shrubs along the picket fence
+addBush(4.2, 1.8, 1.4, '#4b843c', 3);
+addBush(-3.2, -5.6, 1.3, '#3f7638', 3);
+addBush(8, -9, 1.6, '#3d6f37', 3);
+
+{
+  const merged = mergeGeometries(leafParts);
+  const mat = new THREE.MeshStandardMaterial({
+    map: leafTex, vertexColors: true, alphaTest: 0.45, side: THREE.DoubleSide,
+    roughness: 0.82, metalness: 0, alphaToCoverage: true,
+  });
+  addWind(mat, 0.05);
+  const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: leafTex, alphaTest: 0.45, side: THREE.DoubleSide });
+  addWind(depth, 0.05);
+  const leaves = new THREE.Mesh(merged, mat);
+  leaves.customDepthMaterial = depth;
+  leaves.castShadow = true; leaves.receiveShadow = true;
+  scene.add(leaves);
+  const trunks = new THREE.Mesh(mergeGeometries(trunkParts), barkMat);
+  trunks.castShadow = true; trunks.receiveShadow = true;
+  scene.add(trunks);
+}
+
+/* ---------- fences ---------- */
+const woodMat = new THREE.MeshStandardMaterial({ color: '#33302b', roughness: 0.85 });
+const fenceParts = [];
+function box(w, h, d, x, y, z, ry = 0, rz = 0) {
+  const g = new THREE.BoxGeometry(w, h, d);
+  g.rotateZ(rz); g.rotateY(ry); g.translate(x, y, z);
+  fenceParts.push(g);
+}
+// post-and-rail fence following both sides of the path
+function railFence(offset, t0, t1, spacing = 1.9) {
+  const L = pathCurve.getLength();
+  const n = Math.floor(((t1 - t0) * L) / spacing);
+  const up = new THREE.Vector3(0, 1, 0), side = new THREE.Vector3();
+  let prev = null;
+  for (let i = 0; i <= n; i++) {
+    const t = t0 + (t1 - t0) * (i / n);
+    const p = pathCurve.getPointAt(t), tan = pathCurve.getTangentAt(t);
+    side.crossVectors(up, tan).normalize();
+    const x = p.x + side.x * offset, z = p.z + side.z * offset, y = heightAt(x, z);
+    box(0.09, 0.95, 0.09, x, y + 0.42, z);
+    if (prev) {
+      const dx = x - prev.x, dz = z - prev.z, len = Math.hypot(dx, dz);
+      const ry = -Math.atan2(dz, dx), rz = Math.atan2(y - prev.y, len);
+      for (const hgt of [0.42, 0.8]) box(len, 0.045, 0.045, (x + prev.x) / 2, (y + prev.y) / 2 + hgt, (z + prev.z) / 2, ry, rz);
+    }
+    prev = { x, y, z };
+  }
+}
+railFence(PATH_W + 0.35, 0.0, 0.62);
+railFence(-(PATH_W + 0.35), 0.0, 1.0);
+// picket fence running diagonally across the meadow
+function picketFence(points, gap = 0.24) {
+  for (let s = 0; s < points.length - 1; s++) {
+    const [ax, az] = points[s], [bx, bz] = points[s + 1];
+    const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz), ry = -Math.atan2(dz, dx);
+    const n = Math.floor(len / gap);
+    for (let i = 0; i < n; i++) {
+      const t = i / n, x = ax + dx * t, z = az + dz * t, y = heightAt(x, z);
+      const h = 0.95 + vnoise(x * 3, z * 3) * 0.2;
+      box(0.07, h, 0.035, x, y + h / 2 - 0.05, z, ry, rr(-0.06, 0.06));
+      if (i % 9 === 0) box(0.11, 1.15, 0.11, x, y + 0.5, z, ry);
+    }
+    for (const hgt of [0.3, 0.75]) {
+      const ya = heightAt(ax, az), yb = heightAt(bx, bz);
+      box(len, 0.05, 0.03, (ax + bx) / 2, (ya + yb) / 2 + hgt, (az + bz) / 2 + 0.03, ry, Math.atan2(yb - ya, len));
+    }
+  }
+}
+picketFence([[-20, -6.5], [-13, -4.2], [-8, -1.8]]);  // upper left, behind the path
+picketFence([[-1.5, -6.8], [3.5, -2.2], [8.5, 1.2], [14, 5.2], [20, 8.8]]);
+{
+  const fences = new THREE.Mesh(mergeGeometries(fenceParts), woodMat);
+  fences.castShadow = true; fences.receiveShadow = true;
+  scene.add(fences);
+}
+
+/* ---------- grass tufts & meadow flowers (instanced) ---------- */
+{
+  const blade = (rot, lean) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([-0.025, 0, 0, 0.025, 0, 0, lean, 0.32, 0], 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute([0.75, 0.82, 0.5, 0.75, 0.82, 0.5, 1.05, 1.05, 0.8], 3));
+    g.rotateY(rot);
+    return g;
+  };
+  const tuft = mergeGeometries([blade(0, 0.05), blade(1.1, -0.06), blade(2.2, 0.03), blade(2.9, 0.08)]);
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1 });
+  const count = isMobile ? 5000 : 9000;
+  const mesh = new THREE.InstancedMesh(tuft, mat, count);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
+  let placed = 0;
+  while (placed < count) {
+    const x = rr(-24, 24), z = rr(-22, 22);
+    if (distToPath(x, z) < PATH_W + 0.1) continue;
+    const k = rr(0.6, 1.4);
+    p.set(x, heightAt(x, z) - 0.02, z); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rr(0, 6.28)); s.set(k, k * rr(0.7, 1.3), k);
+    m.compose(p, q, s); mesh.setMatrixAt(placed, m);
+    c.set('#9cbc52').offsetHSL(rr(-0.02, 0.02), rr(-0.1, 0.05), rr(-0.08, 0.08));
+    mesh.setColorAt(placed, c);
+    placed++;
+  }
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+
+  const petal = new THREE.CircleGeometry(0.045, 6); petal.rotateX(-Math.PI / 2);
+  const fmat = new THREE.MeshStandardMaterial({ color: '#fbfaf0', roughness: 0.7, emissive: '#30302a' });
+  const fc = isMobile ? 1400 : 2600;
+  const flowers = new THREE.InstancedMesh(petal, fmat, fc);
+  let f = 0;
+  while (f < fc) {
+    // cluster flowers in drifts rather than spreading uniformly
+    const x = rr(-24, 24), z = rr(-22, 22);
+    if (distToPath(x, z) < PATH_W + 0.15 || vnoise(x * 0.35 + 5, z * 0.35) < 0.45) continue;
+    const k = rr(0.6, 1.3);
+    p.set(x, heightAt(x, z) + rr(0.03, 0.12), z); q.identity(); s.set(k, 1, k);
+    m.compose(p, q, s); flowers.setMatrixAt(f++, m);
+  }
+  flowers.receiveShadow = true;
+  scene.add(flowers);
+}
+
+/* ---------- cyclist ---------- */
+const rider = new THREE.Group();
+{
+  const dark = new THREE.MeshStandardMaterial({ color: '#2b2b2b', roughness: 0.6 });
+  const shirt = new THREE.MeshStandardMaterial({ color: '#5f8a4a', roughness: 0.85 });
+  const skin = new THREE.MeshStandardMaterial({ color: '#d9a882', roughness: 0.8 });
+  const hair = new THREE.MeshStandardMaterial({ color: '#6b4a2e', roughness: 0.9 });
+  const pants = new THREE.MeshStandardMaterial({ color: '#d8ccb0', roughness: 0.9 });
+  const add = (geo, mat, x, y, z, rx = 0, ry = 0, rz = 0) => {
+    const mesh = new THREE.Mesh(geo, mat); mesh.position.set(x, y, z); mesh.rotation.set(rx, ry, rz);
+    mesh.castShadow = true; rider.add(mesh); return mesh;
+  };
+  const wheelGeo = new THREE.TorusGeometry(0.33, 0.035, 8, 28);
+  add(wheelGeo, dark, 0.55, 0.36, 0, 0, 0, 0);
+  add(wheelGeo, dark, -0.55, 0.36, 0, 0, 0, 0);
+  const bar = (len, x, y, rz) => add(new THREE.CylinderGeometry(0.025, 0.025, len, 6), dark, x, y, 0, 0, 0, rz);
+  bar(0.75, 0, 0.62, Math.PI / 2 - 0.15);
+  bar(0.55, -0.32, 0.5, -0.6);
+  bar(0.5, 0.38, 0.55, 0.45);
+  bar(0.5, 0.2, 0.48, -0.9);
+  add(new THREE.BoxGeometry(0.2, 0.04, 0.1), dark, -0.2, 0.9, 0);
+  add(new THREE.CylinderGeometry(0.02, 0.02, 0.45, 6), dark, 0.5, 1.0, 0, Math.PI / 2, 0, 0);
+  // body
+  add(new THREE.CapsuleGeometry(0.16, 0.42, 4, 10), shirt, -0.05, 1.22, 0, 0, 0, -0.55);
+  add(new THREE.SphereGeometry(0.15, 16, 12), skin, 0.18, 1.58, 0);
+  add(new THREE.SphereGeometry(0.155, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55), hair, 0.15, 1.62, 0, 0, 0, 0.4);
+  const arm = new THREE.CapsuleGeometry(0.05, 0.42, 3, 6);
+  add(arm, shirt, 0.25, 1.2, 0.14, 0, 0, -1.0);
+  add(arm, shirt, 0.25, 1.2, -0.14, 0, 0, -1.0);
+  rider.userData.legs = [
+    add(new THREE.CapsuleGeometry(0.065, 0.5, 3, 6), pants, -0.05, 0.75, 0.1),
+    add(new THREE.CapsuleGeometry(0.065, 0.5, 3, 6), pants, -0.05, 0.75, -0.1)
+  ];
+  rider.scale.setScalar(1.25);
+  scene.add(rider);
+}
+
+/* ---------- post: film grade, vignette, gentle tilt-shift, grain ---------- */
+const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const composer = new EffectComposer(renderer, rt);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new OutputPass());
+const grade = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+    void main(){
+      // tilt-shift: blur grows toward top and bottom edges
+      float band = smoothstep(0.18, 0.5, abs(vUv.y - 0.52));
+      vec2 px = 1.0 / uRes * band * 2.2;
+      vec3 col = texture2D(tDiffuse, vUv).rgb * 0.36;
+      col += texture2D(tDiffuse, vUv + vec2( px.x, px.y)).rgb * 0.16;
+      col += texture2D(tDiffuse, vUv + vec2(-px.x, px.y)).rgb * 0.16;
+      col += texture2D(tDiffuse, vUv + vec2( px.x,-px.y)).rgb * 0.16;
+      col += texture2D(tDiffuse, vUv + vec2(-px.x,-px.y)).rgb * 0.16;
+      // illustration grade: warm highlights, olive-lifted shadows, slightly softened contrast
+      float l = dot(col, vec3(0.299, 0.587, 0.114));
+      col = mix(col, col * vec3(1.04, 1.01, 0.93), smoothstep(0.4, 1.0, l));
+      col = mix(vec3(0.12, 0.16, 0.08), vec3(1.0), col * 0.94 + 0.04);
+      col = mix(vec3(l), col, 1.06);
+      // vignette
+      vec2 d = vUv - 0.5; col *= 1.0 - dot(d, d) * 0.55;
+      // paper grain
+      float g = h(vUv * uRes + fract(uTime) * 61.0) - 0.5;
+      col += g * 0.035;
+      gl_FragColor = vec4(col, 1.0);
+    }`
+});
+composer.addPass(grade);
+
+/* ---------- resize / loop ---------- */
+function resize() {
+  const w = frame.clientWidth, h = frame.clientHeight;
+  renderer.setSize(w, h, false);
+  composer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  grade.uniforms.uRes.value.set(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
+}
+new ResizeObserver(resize).observe(frame);
+resize();
+
+const clock = new THREE.Clock();
+let ride = 0.42;
+const tmpV = new THREE.Vector3(), tmpT = new THREE.Vector3(), upV = new THREE.Vector3(0, 1, 0), sideV = new THREE.Vector3();
+function placeRider(dt) {
+  ride = (ride + dt * 0.012) % 1;
+  const t = 1 - ride; // riding from the far end toward the viewer, like the illustration
+  pathCurve.getPointAt(t, tmpV); pathCurve.getTangentAt(t, tmpT).negate();
+  sideV.crossVectors(upV, tmpT).normalize();
+  const x = tmpV.x - sideV.x * 0.55, z = tmpV.z - sideV.z * 0.55;
+  rider.position.set(x, heightAt(x, z) + 0.02, z);
+  rider.rotation.y = Math.atan2(-tmpT.z, tmpT.x);
+  const ph = performance.now() * 0.006;
+  rider.userData.legs[0].rotation.z = Math.sin(ph) * 0.5;
+  rider.userData.legs[1].rotation.z = -Math.sin(ph) * 0.5;
+}
+
+let first = true;
+function frameLoop() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+  if (!reduceMotion) {
+    wind.value = t;
+    placeRider(dt);
+  } else if (first) placeRider(0);
+  grade.uniforms.uTime.value = t;
+  controls.update();
+  composer.render();
+  if (first) { first = false; document.getElementById('loading').style.opacity = 0; }
+  if (!stillFrame || clock.elapsedTime < 0.1) requestAnimationFrame(frameLoop);
+}
+const stillFrame = new URLSearchParams(location.search).has('still');
+frameLoop();
+</script>
+</body>
+</html>
