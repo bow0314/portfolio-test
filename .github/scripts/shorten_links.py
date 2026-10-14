@@ -7,11 +7,14 @@ GitHub Pages 的網址由檔名決定，內容修改不會改變網址，
 - REURL_API_KEY：reurl.cc API 金鑰（放在 repo secret）
 - PAGES_BASE：Pages 網址前綴，例如 https://bow0314.github.io/my-repo/
 - SHORTEN_GLOBS：要轉的檔案範圍，多個用逗號分隔，例如 "*.html,pages/*.html"
+- WAIT_LIVE_SECONDS：新頁面最多等多久上線（預設 600 秒）。reurl.cc 會檢查網址打不打得開，
+  而 Pages 部署通常比這個 workflow 慢一兩分鐘，所以要先等頁面上線再縮網址
 """
 import json
 import os
 import pathlib
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -19,6 +22,21 @@ import urllib.request
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 LINKS_FILE = ROOT / "short-links.json"
 SHORT_PREFIX = "https://reurl.cc/"
+
+
+def wait_until_live(url, timeout):
+    """等到網址回 200，回傳是否上線。"""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=15) as r:
+                if r.status == 200:
+                    return True
+        except Exception:
+            pass
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(15)
 
 
 def shorten_url(url, api_key):
@@ -47,6 +65,7 @@ def main():
     if not api_key:
         sys.exit("找不到 REURL_API_KEY：請到 repo 的 Settings → Secrets and variables → Actions 新增這個 secret。")
     base = os.environ["PAGES_BASE"].rstrip("/") + "/"
+    wait = int(os.environ.get("WAIT_LIVE_SECONDS", "600"))
     globs = [g.strip() for g in os.environ.get("SHORTEN_GLOBS", "**/*.html").split(",") if g.strip()]
 
     links = json.loads(LINKS_FILE.read_text(encoding="utf-8")) if LINKS_FILE.exists() else {}
@@ -58,7 +77,13 @@ def main():
         path = f.relative_to(ROOT).as_posix()
         if path in links:
             continue
-        short = shorten_url(base + urllib.parse.quote(path), api_key)
+        url = base + urllib.parse.quote(path)
+        print(f"{path}：等頁面上線…")
+        if not wait_until_live(url, wait):
+            failed.append(path)
+            print(f"{path} → 等了 {wait} 秒頁面還沒上線（{url}），下次再試")
+            continue
+        short = shorten_url(url, api_key)
         if short:
             links[path] = short
             print(f"{path} → {short}")
