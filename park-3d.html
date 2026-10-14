@@ -9,24 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #ece5d6;
-  --paper-deep: #e2d9c6;
-  --ink: #5b574d;
-  --ink-soft: #8b8576;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #1f2119;
-    --paper-deep: #181a13;
-    --ink: #d9d3c2;
-    --ink-soft: #8f8a7a;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #1f2119;
-  --paper-deep: #181a13;
-  --ink: #d9d3c2;
-  --ink-soft: #8f8a7a;
+  /* pale goose-yellow paper, kept in both colour schemes so the piece always reads as a sunny print */
+  --paper: #fbf4d8;
+  --paper-deep: #f3e7b9;
+  --ink: #5e5440;
+  --ink-soft: #8f8265;
+  color-scheme: light;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -66,9 +54,31 @@ body {
   font-family: 'Cormorant Garamond', serif; font-style: italic; color: #4c6a2c;
   transition: opacity .8s ease;
 }
-.hint {
-  margin-top: 16px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center;
+.controls {
+  margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
 }
+.hint { margin-top: 10px; font-size: 0.75rem; color: var(--ink-soft); letter-spacing: 0.06em; text-align: center; }
+.credit { margin-top: 6px; font-size: 0.65rem; color: var(--ink-soft); opacity: 0.8; text-align: center; }
+.credit a { color: inherit; }
+
+.music {
+  font: 500 0.8rem 'Noto Sans TC', sans-serif; letter-spacing: 0.06em;
+  color: var(--ink); background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(94, 84, 64, 0.28); border-radius: 999px;
+  padding: 7px 16px 7px 12px; min-height: 36px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: background .3s ease, border-color .3s ease;
+}
+.music:hover { background: rgba(255, 255, 255, 0.75); }
+.music:focus-visible { outline: 2px solid #8a9a3c; outline-offset: 2px; }
+.music .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.music .bars i { width: 2px; height: 4px; background: currentColor; border-radius: 1px; opacity: 0.7; }
+.music[aria-pressed="true"] { background: rgba(255, 255, 255, 0.8); border-color: rgba(94, 84, 64, 0.45); }
+.music[aria-pressed="true"] .bars i { animation: bar 1.6s ease-in-out infinite; }
+.music[aria-pressed="true"] .bars i:nth-child(2) { animation-delay: -0.5s; }
+.music[aria-pressed="true"] .bars i:nth-child(3) { animation-delay: -1.0s; }
+@keyframes bar { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+@media (prefers-reduced-motion: reduce) { .music .bars i { animation: none !important; } }
 </style>
 <script type="importmap">
 { "imports": {
@@ -85,7 +95,13 @@ body {
     <div class="loading" id="loading">sketching the park…</div>
   </div>
 </div>
+<div class="controls">
+  <button class="music" id="music" type="button" aria-pressed="false">
+    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="label">播放音樂</span>
+  </button>
+</div>
 <p class="hint">拖曳轉動視角 · 滾輪縮放</p>
+<p class="credit">音樂：alex-morgan〈Piano Lounge Sunny Cafe Music〉，來自 <a href="https://pixabay.com/music/" target="_blank" rel="noopener">Pixabay</a></p>
 
 <script type="module">
 import * as THREE from 'three';
@@ -710,6 +726,52 @@ const grade = new ShaderPass({
     }`
 });
 composer.addPass(grade);
+
+
+/* ---------- music: a real piano recording, starts on tap ---------- */
+// "Piano Lounge – Sunny Cafe Music" by alex-morgan, from Pixabay (Pixabay Content License).
+// Browsers only allow sound after a tap, so nothing plays until the button is pressed.
+// The level goes through Web Audio because iOS ignores <audio>.volume.
+(() => {
+  const btn = document.getElementById('music'), label = btn.querySelector('.label');
+  const VOLUME = 0.42;
+  const audio = new Audio();
+  audio.src = 'audio/sunny-cafe.mp3'; audio.loop = true; audio.preload = 'none';
+  let ctx = null, gain = null, playing = false, pauseTimer = 0;
+  const setState = on => {
+    playing = on;
+    btn.setAttribute('aria-pressed', String(on));
+    label.textContent = on ? '暫停音樂' : '播放音樂';
+  };
+  async function start() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      gain = ctx.createGain(); gain.gain.value = 0;
+      ctx.createMediaElementSource(audio).connect(gain).connect(ctx.destination);
+    }
+    clearTimeout(pauseTimer);
+    setState(true);
+    if (audio.readyState < 3) label.textContent = '音樂載入中…';
+    try { await ctx.resume(); await audio.play(); }
+    catch (e) { console.error(e); setState(false); label.textContent = '無法播放，再按一次'; return; }
+    if (!playing) return;
+    label.textContent = '暫停音樂';
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setTargetAtTime(VOLUME, ctx.currentTime, 0.9); // slow fade in
+  }
+  function stop() {
+    setState(false);
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setTargetAtTime(0, ctx.currentTime, 0.35);
+    pauseTimer = setTimeout(() => { if (!playing) audio.pause(); }, 1500);
+  }
+  btn.addEventListener('click', () => (playing ? stop() : start()));
+  // pause in a background tab, pick up again when the viewer comes back
+  document.addEventListener('visibilitychange', () => {
+    if (!playing) return;
+    if (document.hidden) audio.pause(); else audio.play().catch(() => {});
+  });
+})();
 
 /* ---------- resize / loop ---------- */
 function resize() {
