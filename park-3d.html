@@ -728,23 +728,22 @@ composer.addPass(grade);
 // Browsers only allow sound after a tap, so nothing plays until the button is pressed.
 const music = (() => {
   const btn = document.getElementById('music'), label = btn.querySelector('.label');
-  const BEAT = 60 / 96, BAR = BEAT * 4, EIGHTH = BEAT / 2, SWING = EIGHTH * 0.16;
+  const BEAT = 60 / 108, BAR = BEAT * 4, EIGHTH = BEAT / 2, SWING = EIGHTH * 0.06;
   let ctx = null, master, send, windGain, noiseBuf, playing = false, timer = null;
-  let nextBar = 0, bar = 0, mel = 74, lastWind = 0;
+  let nextBar = 0, bar = 0, mel = 79, lastWind = 0;
 
-  // D Dorian: minor, but the raised sixth (B) keeps it sunny rather than sad.
-  // chords as [bass, voicing...] in MIDI
+  // Bright G major with just a hint of the relative minor (Em7, Bm7); voiced high and open
+  // so nothing sits heavy in the low end. chords as [bass, arpeggio...] in MIDI
   const CH = {
-    Dm9: [38, 50, 53, 57, 60, 64], G9: [43, 53, 57, 59, 62], Fmaj7: [41, 48, 53, 57, 64], G6: [43, 50, 55, 59, 64],
-    Am7: [45, 52, 55, 60, 64], Cmaj7: [36, 52, 55, 59, 64], Em7: [40, 50, 55, 59, 62]
+    Gmaj7: [55, 59, 62, 66, 69], Em7: [52, 55, 59, 62, 66], Cmaj9: [48, 55, 59, 62, 64], D6: [50, 57, 62, 66, 71],
+    Bm7: [47, 54, 57, 62, 66], Am7: [45, 52, 55, 60, 64], Dsus: [50, 55, 57, 62, 67]
   };
   const SECTIONS = [
-    ['Dm9', 'G9', 'Dm9', 'G9'], ['Fmaj7', 'G6', 'Am7', 'Dm9'], ['Cmaj7', 'G6', 'Am7', 'Em7'], ['Fmaj7', 'Em7', 'Dm9', 'G9']
+    ['Cmaj9', 'D6', 'Bm7', 'Em7'], ['Am7', 'D6', 'Gmaj7', 'Em7'], ['Cmaj9', 'D6', 'Gmaj7', 'Gmaj7'], ['Am7', 'Bm7', 'Cmaj9', 'Dsus']
   ];
-  const ORDER = [0, 1, 0, 2, 1, 3];
-  const SCALE = [0, 2, 3, 5, 7, 9, 10]; // D Dorian, relative to D
-  // melody onsets in swung eighths: syncopated and chatty
-  const RHYTHMS = [[0, 2, 3, 4, 6], [1, 2, 4, 7], [0, 3, 4, 6, 7], [0, 1, 2, 4], [2, 3, 4, 6], [0, 3, 6], [0, 2, 4, 5, 6]];
+  const ORDER = [0, 1, 0, 3, 1, 2];
+  const SCALE = [0, 2, 4, 7, 9]; // G major pentatonic, relative to G – airy, no tension
+  const RHYTHMS = [[0, 3, 4, 6], [0, 2, 3, 4, 6], [2, 4, 6, 7], [0, 1, 2, 4, 6], [0, 4, 6], [1, 2, 4, 5, 6]];
 
   function makeImpulse(sec) {
     const len = Math.floor(ctx.sampleRate * sec), buf = ctx.createBuffer(2, len, ctx.sampleRate);
@@ -821,11 +820,11 @@ const music = (() => {
   function pickMelody(chord, strong) {
     const chordPc = chord.slice(1).map(m => m % 12);
     const cands = [];
-    for (let m = 69; m <= 86; m++) {
-      const pc = ((m - 2) % 12 + 12) % 12;
+    for (let m = 74; m <= 88; m++) {
+      const pc = ((m - 7) % 12 + 12) % 12;
       if (!SCALE.includes(pc)) continue;
       const dist = Math.abs(m - mel);
-      if (dist > 7) continue;
+      if (dist > 5) continue;
       let w = 6 - dist + (dist === 0 ? -3 : 0);
       if (chordPc.includes(m % 12)) w += strong ? 5 : 1.5;
       cands.push([m, Math.max(0.3, w)]);
@@ -837,31 +836,34 @@ const music = (() => {
   const at = (t0, k) => t0 + k * EIGHTH + (k % 2 ? SWING : 0) + human();
   function playBar(t0, i) {
     const sec = SECTIONS[ORDER[Math.floor(i / 4) % ORDER.length]];
-    const chord = CH[sec[i % 4]], bass = chord[0], v = chord.slice(1);
-    // left hand: light "bass – chord" bounce instead of a held pedal
-    note(bass, at(t0, 0), 0.4, BEAT * 1.4);
-    note(bass + 7, at(t0, 4), 0.3, BEAT * 1.2);
-    const stab = (k, vel) => v.slice(-3).forEach(m => note(m, at(t0, k) + Math.random() * 0.01, vel, EIGHTH * 1.1));
-    stab(2, 0.2 + Math.random() * 0.05);
-    stab(6, 0.18 + Math.random() * 0.05);
-    if (Math.random() < 0.55) note(v[0], at(t0, 7), 0.16, EIGHTH * 0.9);  // pickup into the next bar
-    if (i % 2 === 1 && Math.random() < 0.5) stab(3, 0.14);
-    // right hand: four-bar phrases, the last bar lands on a chord tone with a little room to breathe
-    if (i < 1) return;
-    const phraseEnd = i % 4 === 3;
-    const rhythm = phraseEnd ? [0, 2, 4] : RHYTHMS[Math.floor(Math.random() * RHYTHMS.length)];
-    rhythm.forEach((e, idx) => {
-      const gap = ((rhythm[idx + 1] ?? 8) - e) * EIGHTH;
-      const last = phraseEnd && idx === rhythm.length - 1;
-      const m = pickMelody(chord, e % 2 === 0 || last);
-      const t = at(t0, e) + 0.01;
-      if (!last && Math.random() < 0.14) {
-        // grace note from a step below
-        const g = m - (SCALE.includes(((m - 3) % 12 + 12) % 12) ? 1 : 2);
-        note(g, t - 0.06, 0.28, 0.07);
+    const chord = CH[sec[i % 4]], arp = chord.slice(1);
+    // left hand: a light arpeggio that rises and falls like a breeze, pedalled per half bar
+    note(chord[0], at(t0, 0), 0.26, BAR * 0.55);
+    const ext = [...arp, arp[0] + 12];
+    const seq = [null, ext[0], ext[1], ext[2], ext[3], ext[4], ext[3], ext[2]];
+    for (let k = 1; k < 8; k++) {
+      const hold = (k < 4 ? 4 - k : 8 - k) * EIGHTH + 0.12;
+      note(seq[k], at(t0, k), 0.13 + Math.random() * 0.05 + (k === 4 ? 0.03 : 0), hold);
+    }
+    // right hand: four-bar phrases up high, a soft touch, landing on a chord tone
+    if (i >= 1) {
+      const phraseEnd = i % 4 === 3;
+      const rhythm = phraseEnd ? [0, 2, 4] : RHYTHMS[Math.floor(Math.random() * RHYTHMS.length)];
+      rhythm.forEach((e, idx) => {
+        const gap = ((rhythm[idx + 1] ?? 8) - e) * EIGHTH;
+        const last = phraseEnd && idx === rhythm.length - 1;
+        const m = pickMelody(chord, e % 2 === 0 || last);
+        note(m, at(t0, e) + 0.01, 0.3 + Math.random() * 0.1 + (e % 4 === 0 ? 0.04 : 0), last ? BEAT * 2.4 : Math.max(gap * 0.9, 0.16));
+      });
+    }
+    // now and then a few wind-chime notes drift past, very quietly
+    if (Math.random() < 0.4) {
+      const n = 1 + Math.floor(Math.random() * 3);
+      for (let c = 0; c < n; c++) {
+        const pent = [86, 88, 91, 93, 95, 98];
+        note(pent[Math.floor(Math.random() * pent.length)], t0 + Math.random() * BAR, 0.07 + Math.random() * 0.04, 0.9);
       }
-      note(m, t, 0.4 + Math.random() * 0.14 + (e % 4 === 0 ? 0.05 : 0), last ? BEAT * 2.2 : Math.max(gap * 0.8, 0.14));
-    });
+    }
   }
   function tick() {
     while (nextBar < ctx.currentTime + 0.5) { playBar(nextBar, bar++); nextBar += BAR; }
@@ -871,7 +873,7 @@ const music = (() => {
     await ctx.resume();
     if (nextBar < ctx.currentTime) nextBar = ctx.currentTime + 0.15;
     master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.setTargetAtTime(1.9, ctx.currentTime, 0.8);
+    master.gain.setTargetAtTime(2.4, ctx.currentTime, 0.8);
     tick(); clearInterval(timer); timer = setInterval(tick, 200);
     playing = true; btn.setAttribute('aria-pressed', 'true'); label.textContent = '暫停鋼琴';
   }
