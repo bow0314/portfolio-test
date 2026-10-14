@@ -179,12 +179,30 @@ scene.add(fill);
 
 /* ---------- shared wind uniform ---------- */
 const wind = { value: 0 };
+const WIND_DIR = new THREE.Vector2(0.92, 0.39).normalize();
+// Gusts: bands of stronger wind rolling across the park, with calmer lulls between.
+// Mirrored in JS (gustAt) so drifting leaves ride the same gusts the grass shows.
+const WIND_GLSL = `
+  uniform float uTime;
+  const vec2 windDir = vec2(${WIND_DIR.x.toFixed(4)}, ${WIND_DIR.y.toFixed(4)});
+  float gust(vec2 p) {
+    float along = dot(p, windDir), across = dot(p, vec2(-windDir.y, windDir.x));
+    float band = sin(along * 0.23 - uTime * 1.45 + sin(across * 0.17) * 1.4) * 0.5 + 0.5;
+    float swell = sin(along * 0.06 + across * 0.05 - uTime * 0.5) * 0.5 + 0.5;
+    return 0.22 + band * band * (0.6 + swell * 1.1);
+  }`;
+function gustAt(x, z, t) {
+  const along = x * WIND_DIR.x + z * WIND_DIR.y, across = -x * WIND_DIR.y + z * WIND_DIR.x;
+  const band = Math.sin(along * 0.23 - t * 1.45 + Math.sin(across * 0.17) * 1.4) * 0.5 + 0.5;
+  const swell = Math.sin(along * 0.06 + across * 0.05 - t * 0.5) * 0.5 + 0.5;
+  return 0.22 + band * band * (0.6 + swell * 1.1);
+}
 function addWind(material, strength) {
   const patch = shader => {
     shader.uniforms.uTime = wind;
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `#include <common>
-        uniform float uTime;
+        ${WIND_GLSL}
         attribute vec3 sphereNormal;
         attribute float sway;`)
       .replace('#include <beginnormal_vertex>', `vec3 objectNormal = normalize(mix(normal, sphereNormal, 0.82));
@@ -195,10 +213,37 @@ function addWind(material, strength) {
         float ph = position.x * 0.45 + position.z * 0.35;
         transformed.x += sin(uTime * 1.3 + ph) * ${strength.toFixed(3)} * sway;
         transformed.z += cos(uTime * 1.05 + ph * 1.3) * ${(strength * 0.7).toFixed(3)} * sway;
-        transformed.y += sin(uTime * 2.1 + ph * 2.0) * ${(strength * 0.35).toFixed(3)} * sway;`);
+        transformed.y += sin(uTime * 2.1 + ph * 2.0) * ${(strength * 0.35).toFixed(3)} * sway;
+        // whole crown leans downwind in gusts, outer leaves flutter faster
+        float g = gust(position.xz);
+        transformed.xz += windDir * g * ${(strength * 2.2).toFixed(3)} * sway;
+        transformed += vec3(sin(uTime * 7.0 + ph * 5.0), cos(uTime * 6.3 + ph * 4.0), sin(uTime * 5.7 + ph * 3.0))
+                       * ${(strength * 0.45).toFixed(3)} * g * sway;`);
   };
   material.onBeforeCompile = patch;
   return patch;
+}
+// Instanced grass & flowers: bend in world space so every tuft follows the same gust field.
+function addGrassWind(material, amount, bendExpr) {
+  material.onBeforeCompile = shader => {
+    shader.uniforms.uTime = wind;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>
+        ${WIND_GLSL}`)
+      .replace('#include <project_vertex>', `
+        vec4 root = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        vec4 wpos = modelMatrix * instanceMatrix * vec4(transformed, 1.0);
+        float bend = ${bendExpr};
+        float g = gust(root.xz);
+        float flick = sin(uTime * 3.3 + root.x * 1.7 + root.z * 1.3) * 0.3 + sin(uTime * 5.1 + root.z * 2.9) * 0.15;
+        wpos.xz += windDir * (g + flick * (0.4 + g)) * bend * ${amount.toFixed(3)};
+        wpos.y -= g * g * bend * ${(amount * 0.3).toFixed(3)};
+        #ifdef USE_COLOR
+          vColor.rgb *= 1.0 + g * bend * 0.22; // blades flash lighter as a gust lays them over
+        #endif
+        vec4 mvPosition = viewMatrix * wpos;
+        gl_Position = projectionMatrix * mvPosition;`);
+  };
 }
 
 /* ---------- textures drawn on canvas ---------- */
@@ -433,9 +478,9 @@ addBush(8, -9, 1.6, '#3d6f37', 3);
     map: leafTex, vertexColors: true, alphaTest: 0.45, side: THREE.DoubleSide,
     roughness: 0.82, metalness: 0, alphaToCoverage: true,
   });
-  addWind(mat, 0.05);
+  addWind(mat, 0.06);
   const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: leafTex, alphaTest: 0.45, side: THREE.DoubleSide });
-  addWind(depth, 0.05);
+  addWind(depth, 0.06);
   const leaves = new THREE.Mesh(merged, mat);
   leaves.customDepthMaterial = depth;
   leaves.castShadow = true; leaves.receiveShadow = true;
@@ -513,6 +558,7 @@ picketFence([[-1.5, -6.8], [3.5, -2.2], [8.5, 1.2], [14, 5.2], [20, 8.8]]);
   };
   const tuft = mergeGeometries([blade(0, 0.05), blade(1.1, -0.06), blade(2.2, 0.03), blade(2.9, 0.08)]);
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1 });
+  addGrassWind(mat, 0.16, 'pow(clamp(position.y / 0.32, 0.0, 1.0), 1.6)');
   const count = isMobile ? 5000 : 9000;
   const mesh = new THREE.InstancedMesh(tuft, mat, count);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
@@ -532,6 +578,7 @@ picketFence([[-1.5, -6.8], [3.5, -2.2], [8.5, 1.2], [14, 5.2], [20, 8.8]]);
 
   const petal = new THREE.CircleGeometry(0.045, 6); petal.rotateX(-Math.PI / 2);
   const fmat = new THREE.MeshStandardMaterial({ color: '#fbfaf0', roughness: 0.7, emissive: '#30302a' });
+  addGrassWind(fmat, 0.07, '1.0');
   const fc = isMobile ? 1400 : 2600;
   const flowers = new THREE.InstancedMesh(petal, fmat, fc);
   let f = 0;
@@ -546,6 +593,51 @@ picketFence([[-1.5, -6.8], [3.5, -2.2], [8.5, 1.2], [14, 5.2], [20, 8.8]]);
   flowers.receiveShadow = true;
   scene.add(flowers);
 }
+
+/* ---------- leaves carried on the wind ---------- */
+const drift = (() => {
+  const n = isMobile ? 40 : 70;
+  const geo = new THREE.PlaneGeometry(0.5, 0.5);
+  const mat = new THREE.MeshStandardMaterial({ map: leafTex, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.8 });
+  const mesh = new THREE.InstancedMesh(geo, mat, n);
+  mesh.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: leafTex, alphaTest: 0.45, side: THREE.DoubleSide });
+  mesh.castShadow = true;
+  mesh.frustumCulled = false;
+  const tones = ['#6f9a3e', '#a7b84a', '#c9b45a', '#4f7d38', '#8faa45'];
+  const items = [];
+  const spawn = (it, anywhere) => {
+    // enter upwind of the visible area, or anywhere on first fill
+    it.p.set(anywhere ? rr(-22, 22) : rr(-30, -20), rr(0.6, 7), anywhere ? rr(-18, 20) : rr(-18, 22));
+    it.speed = rr(0.7, 1.4); it.phase = rr(0, 6.28);
+    it.spin.set(rr(-2.5, 2.5), rr(-2.5, 2.5), rr(-2.5, 2.5));
+  };
+  const c = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const it = { p: new THREE.Vector3(), r: new THREE.Euler(rr(0, 6), rr(0, 6), rr(0, 6)), spin: new THREE.Vector3(), s: rr(0.7, 1.3) };
+    spawn(it, true); items.push(it);
+    mesh.setColorAt(i, c.set(tones[i % tones.length]).offsetHSL(0, 0, rr(-0.05, 0.05)));
+  }
+  scene.add(mesh);
+  const o = new THREE.Object3D();
+  return (dt, t) => {
+    for (let i = 0; i < n; i++) {
+      const it = items[i], g = gustAt(it.p.x, it.p.z, t);
+      const push = (0.6 + g * 2.6) * it.speed;
+      it.p.x += WIND_DIR.x * push * dt;
+      it.p.z += WIND_DIR.y * push * dt + Math.sin(t * 0.9 + it.phase) * 0.35 * dt;
+      // gusts lift, lulls let leaves sink and flutter down
+      it.p.y += ((g - 0.75) * 0.9 + Math.sin(t * 2.2 + it.phase) * 0.6) * dt;
+      const ground = heightAt(it.p.x, it.p.z) + 0.05;
+      if (it.p.y < ground) { it.p.y = ground; }
+      const flutter = 0.4 + g;
+      it.r.x += it.spin.x * flutter * dt; it.r.y += it.spin.y * flutter * dt; it.r.z += it.spin.z * flutter * dt;
+      if (it.p.x > 26 || it.p.z > 24 || it.p.y > 11) spawn(it, false);
+      o.position.copy(it.p); o.rotation.copy(it.r); o.scale.setScalar(it.s); o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+})();
 
 /* ---------- cyclist ---------- */
 const rider = new THREE.Group();
@@ -653,7 +745,8 @@ function frameLoop() {
   if (!reduceMotion) {
     wind.value = t;
     placeRider(dt);
-  } else if (first) placeRider(0);
+    drift(dt, t);
+  } else if (first) { placeRider(0); drift(0, 0); }
   grade.uniforms.uTime.value = t;
   controls.update();
   composer.render();
